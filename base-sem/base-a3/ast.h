@@ -43,7 +43,10 @@
 #include <stdlib.h>   // for NULL
 #include "location.h"
 #include <iostream>
+#include "hashtable.h"
 using namespace std;
+
+class SymbolTable;
 
 class Node  {
   protected:
@@ -60,6 +63,8 @@ class Node  {
     Node *GetParent()        { return parent; }
     bool needsSymbolTable()  { return false;}
     void Check() { }
+    void BuildScope() { }
+    void BuildScope(SymbolTable* parentScope) { }
     virtual const char *GetPrintNameForNode() = 0;
 
     // Print() is deliberately _not_ virtual
@@ -76,6 +81,7 @@ class Identifier : public Node
 
   public:
     Identifier(yyltype loc, const char *name);
+    const char *GetName() { return name; }
     const char *GetPrintNameForNode()   { return "Identifier"; }
     void PrintChildren(int indentLevel);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }

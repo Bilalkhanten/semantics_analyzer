@@ -15,6 +15,10 @@ Hashtable<Node*>* SymbolTable::getHashTablePointer(){
     return this->symbolTable;
 }
 
+void SymbolTable::AddDecl(Decl* newEntry, bool overwrite){
+    symbolTable->Enter(newEntry->GetDeclName(), newEntry, overwrite);
+}
+
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
@@ -32,12 +36,31 @@ void Program::Check() {
      */
      SymbolTable* symbolT = new SymbolTable();
      if(needsSymbolTable() == true){
-        this->symbolTable = symbolT;
+        this->globalSymbolTable = symbolT;
      }
      //Build the symbol table
+     BuildScope();
+     //Check everything
      for (int i = 0; i < decls->NumElements(); i++){
         decls->Nth(i)->Check();
      }
+}
+
+void Program::BuildScope(){
+    this->globalSymbolTable->SetParentTable(NULL);
+    for (int i = 0; i < decls->NumElements(); i++){
+        Node* n = this->globalSymbolTable->getHashTablePointer()->Lookup( decls->Nth(i)->GetDeclName() );
+        bool overwrite = false;
+        if(n != NULL){
+            //Throw error and return
+            return;
+        }
+        this->globalSymbolTable->AddDecl(decls->Nth(i), overwrite);
+    }
+
+    for (int i = 0; i < decls->NumElements(); i++){
+        decls->Nth(i)->BuildScope(this->globalSymbolTable);
+    }
 }
 
 void Program::PrintChildren(int indentLevel) {
@@ -141,10 +164,3 @@ void SwitchStmt::PrintChildren(int indentLevel) {
     cases->PrintAll(indentLevel+1);
     if (def) def->Print(indentLevel+1);
 }
-
-
-
-
-
-
-

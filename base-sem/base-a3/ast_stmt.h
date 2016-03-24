@@ -25,9 +25,12 @@ void yyerror(const char *msg);
 class SymbolTable {
   private:
     Hashtable<Node*>* symbolTable;
+    SymbolTable* parentTable;
 
   public:
     SymbolTable();
+    void SetParentTable(SymbolTable* parentTable) { this->parentTable = parentTable;}
+    void AddDecl(Decl* newEntry, bool overwrite);
     Hashtable<Node*>* getHashTablePointer();
 };
 
@@ -35,11 +38,12 @@ class Program : public Node
 {
   protected:
      List<Decl*> *decls;
-     SymbolTable* symbolTable;
+     SymbolTable* globalSymbolTable;
 
   public:
      Program(List<Decl*> *declList);
      void Check();
+     void BuildScope();
      bool needsSymbolTable() { return true; }
      const char *GetPrintNameForNode() { return "Program"; }
      void PrintChildren(int indentLevel);
@@ -47,6 +51,10 @@ class Program : public Node
 
 class Stmt : public Node
 {
+  protected:
+     SymbolTable* scopeTable;
+     SymbolTable* parentTable;
+
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}

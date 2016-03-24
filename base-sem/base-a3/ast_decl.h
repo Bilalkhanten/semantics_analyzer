@@ -1,4 +1,4 @@
-/* 
+/*
  * In our AST Decl nodes are used to represent and manage
  * declarations. There are 4 subclasses of the base class, specialized
  * for declarations of variables, functions, classes, and interfaces.
@@ -15,6 +15,7 @@
 
 #include "ast.h"
 #include "list.h"
+#include "ast_stmt.h"
 
 class Type;
 class NamedType;
@@ -23,22 +24,26 @@ class Stmt;
 
 void yyerror(const char *msg);
 
-class Decl : public Node 
+class Decl : public Node
 {
   protected:
     Identifier *id;
-  
+    SymbolTable* parentTable;
+    SymbolTable* scopeTable;
+
   public:
     Decl() : id(NULL) {}
+    void BuildScope(SymbolTable* parentScope) { }
     Decl(Identifier *name);
+    const char* GetDeclName() { return id->GetName(); }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
-class VarDecl : public Decl 
+class VarDecl : public Decl
 {
   protected:
     Type *type;
-    
+
   public:
     VarDecl() : type(NULL) {}
     VarDecl(Identifier *name, Type *type);
@@ -46,7 +51,7 @@ class VarDecl : public Decl
     void PrintChildren(int indentLevel);
 };
 
-class ClassDecl : public Decl 
+class ClassDecl : public Decl
 {
   protected:
     List<Decl*> *members;
@@ -54,8 +59,8 @@ class ClassDecl : public Decl
     List<NamedType*> *implements;
 
   public:
-	
-    ClassDecl(Identifier *name, NamedType *extends, 
+
+    ClassDecl(Identifier *name, NamedType *extends,
               List<NamedType*> *implements, List<Decl*> *members);
     const char *GetPrintNameForNode() { return "ClassDecl"; }
     void PrintChildren(int indentLevel);
@@ -68,28 +73,30 @@ class VarDeclError : public VarDecl
     const char *GetPrintNameForNode() { return "VarDeclError"; }
 };
 
-class InterfaceDecl : public Decl 
+class InterfaceDecl : public Decl
 {
   protected:
     List<Decl*> *members;
-    
+
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
     const char *GetPrintNameForNode() { return "InterfaceDecl"; }
     void PrintChildren(int indentLevel);
 };
 
-class FnDecl : public Decl 
+class FnDecl : public Decl
 {
   protected:
     List<VarDecl*> *formals;
     Type *returnType;
     Stmt *body;
-    
+    SymbolTable* formalsTable;
+
   public:
     FnDecl() : Decl(), formals(NULL), returnType(NULL), body(NULL) {}
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
+    void BuildScope(SymbolTable* s);
     const char *GetPrintNameForNode() { return "FnDecl"; }
     void PrintChildren(int indentLevel);
 };
