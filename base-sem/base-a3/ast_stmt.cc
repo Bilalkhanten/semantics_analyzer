@@ -19,6 +19,41 @@ void SymbolTable::AddDecl(Decl* newEntry, bool overwrite){
     symbolTable->Enter(newEntry->GetDeclName(), newEntry, overwrite);
 }
 
+void SymbolTable::AddDecl(FnDecl* newEntry, bool overwrite){
+    char result[100];
+    strcpy(result, newEntry->GetDeclName());
+    List<VarDecl*>* formals = newEntry->GetFormals();
+
+    for(int i = 0; i < formals->NumElements(); i++){
+       strcat(result, formals->Nth(i)->GetType()->GetTypeName());
+    }
+
+    const char* temp = result;
+    symbolTable->Enter(result, newEntry, overwrite);
+}
+
+Node* SymbolTable::CheckDecl(Decl* d){
+    return symbolTable->Lookup(d->GetDeclName());
+}
+
+Node* SymbolTable::CheckDecl(FnDecl* d){
+    char result[100];
+    strcpy(result, d->GetDeclName());
+    List<VarDecl*>* formals = d->GetFormals();
+
+    for(int i = 0; i < formals->NumElements(); i++){
+       strcat(result, formals->Nth(i)->GetType()->GetTypeName());
+    }
+
+    const char* temp = result;
+
+    return symbolTable->Lookup(temp);
+}
+
+Node* SymbolTable::CheckDecl(NamedType* t){
+    return symbolTable->Lookup(t->GetTypeName());
+}
+
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
@@ -79,10 +114,32 @@ void StmtBlock::PrintChildren(int indentLevel) {
     stmts->PrintAll(indentLevel+1);
 }
 
+void StmtBlock::BuildScope(SymbolTable* s){
+    localScope->SetParentTable(s);
+    for(int i = 0; i < decls->NumElements(); i++){
+        Node* n = localScope->getHashTablePointer()->Lookup(decls->Nth(i)->GetDeclName());
+        bool overwrite = false;
+        if(n != NULL){
+            //Throw error and return
+            return;
+        }
+        localScope->AddDecl(decls->Nth(i), overwrite);
+    }
+
+    for(int i = 0; i < stmts->NumElements(); i++){
+        stmts->Nth(i)->BuildScope(localScope);
+    }
+}
+
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     Assert(t != NULL && b != NULL);
     (test=t)->SetParent(this);
     (body=b)->SetParent(this);
+}
+
+void ConditionalStmt::BuildScope(SymbolTable* s){
+    localScope->SetParentTable(s);
+    body->BuildScope(s);
 }
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
@@ -98,9 +155,19 @@ void ForStmt::PrintChildren(int indentLevel) {
     body->Print(indentLevel+1, "(body) ");
 }
 
+void ForStmt::BuildScope(SymbolTable* s){
+    localScope->SetParentTable(s);
+    body->BuildScope(s);
+}
+
 void WhileStmt::PrintChildren(int indentLevel) {
     test->Print(indentLevel+1, "(test) ");
     body->Print(indentLevel+1, "(body) ");
+}
+
+void WhileStmt::BuildScope(SymbolTable* s){
+    localScope->SetParentTable(s);
+    body->BuildScope(s);
 }
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
@@ -149,6 +216,13 @@ SwitchLabel::SwitchLabel(List<Stmt*> *s) {
 void SwitchLabel::PrintChildren(int indentLevel) {
     if (label) label->Print(indentLevel+1);
     stmts->PrintAll(indentLevel+1);
+}
+
+void SwitchLabel::BuildScope(SymbolTable* s){
+    localScope->SetParentTable(s);
+    for(int i = 0; i < stmts->NumElements(); i++){
+        stmts->Nth(i)->BuildScope(s);
+    }
 }
 
 SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {

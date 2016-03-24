@@ -38,6 +38,68 @@ void ClassDecl::PrintChildren(int indentLevel) {
     members->PrintAll(indentLevel+1);
 }
 
+void ClassDecl::BuildScope(SymbolTable* s){
+    localScope->SetParentTable(s);
+
+    SymbolTable* current = s;
+    bool found = false;
+    while(current != NULL && !found){
+        Node* n = current->CheckDecl(extends);
+        if(n != NULL){
+            found = true;
+            extendedScope = current;
+            break;
+        }
+        current = current->GetParentTable();
+    }
+    if(!found){
+        //Throw error, missing implementation of a class
+        return;
+    }
+
+    current = s;
+    found = false;
+    int count = implements->NumElements();
+    while(current != NULL && count != 0 && !found){
+        for(int i = 0; i < implements->NumElements(); i++){
+            found = false;
+            Node* n = current->CheckDecl(implements->Nth(i));
+            if(n != NULL){
+                count--;
+                found = true;
+            }
+        }
+        if(found == true && count == 0){
+            implementedScope->Append(current);
+            break;
+        }
+        else if(found == true){
+            implementedScope->Append(current);
+        }
+        else if(count == 0){
+            implementedScope->Append(current);
+            found = true;
+            break;
+        }
+        current = current->GetParentTable();
+    }
+    if(!found){
+        //Throw error, missing implementation of an interface
+        return;
+    }
+
+    for(int i = 0; i < members->NumElements(); i++){
+        Decl* curr = members->Nth(i);
+        Node* n = localScope->CheckDecl(curr);
+        bool overwrite = false;
+        if(n != NULL){
+            //Check for overriding
+            //Throw error
+            return;
+        }
+        localScope->AddDecl(curr, overwrite);
+    }
+}
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     Assert(n != NULL && m != NULL);

@@ -47,6 +47,7 @@ class VarDecl : public Decl
   public:
     VarDecl() : type(NULL) {}
     VarDecl(Identifier *name, Type *type);
+    Type* GetType() { return type; }
     const char *GetPrintNameForNode() { return "VarDecl"; }
     void PrintChildren(int indentLevel);
 };
@@ -57,11 +58,15 @@ class ClassDecl : public Decl
     List<Decl*> *members;
     NamedType *extends;
     List<NamedType*> *implements;
+    SymbolTable* extendedScope;
+    List<SymbolTable*>* implementedScope;
+    SymbolTable* localScope;
 
   public:
 
     ClassDecl(Identifier *name, NamedType *extends,
               List<NamedType*> *implements, List<Decl*> *members);
+    void BuildScope(SymbolTable* s);
     const char *GetPrintNameForNode() { return "ClassDecl"; }
     void PrintChildren(int indentLevel);
 };
@@ -96,6 +101,7 @@ class FnDecl : public Decl
     FnDecl() : Decl(), formals(NULL), returnType(NULL), body(NULL) {}
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
+    List<VarDecl*>* GetFormals() { return formals; }
     void BuildScope(SymbolTable* s);
     const char *GetPrintNameForNode() { return "FnDecl"; }
     void PrintChildren(int indentLevel);
