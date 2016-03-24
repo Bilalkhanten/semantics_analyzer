@@ -5,6 +5,6 @@ SemanticsSymbolTable::SemanticsSymbolTable()
     h = new Hashtable();
 }
 
-Hashtable<Node*> SemanticsSymbolTable::getHashTable(){
+Hashtable<Node*>* SemanticsSymbolTable::getHashTable(){
     return this.h;
 }
