@@ -73,8 +73,10 @@ void Program::Check() {
      if(needsSymbolTable() == true){
         this->globalSymbolTable = symbolT;
      }
+
      //Build the symbol table
      BuildScope();
+
      //Check everything
      for (int i = 0; i < decls->NumElements(); i++){
         decls->Nth(i)->Check();
