@@ -1,0 +1,8 @@
+string x;
+x = 0x12345f;
+
+/* incorrectly putting a hex value in a string */
+
+int main() {
+
+}

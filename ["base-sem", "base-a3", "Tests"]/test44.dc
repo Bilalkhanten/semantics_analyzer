@@ -1,0 +1,11 @@
+bool x = true;
+bool y;
+int w;
+w = 3;
+
+/* doing operations with globals */
+
+int main() {
+    y = x;
+    w = w * 9;
+}

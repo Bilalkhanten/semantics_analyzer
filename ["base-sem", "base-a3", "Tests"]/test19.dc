@@ -1,0 +1,8 @@
+int x;
+x = false;
+
+/* Setting a bool to an int */
+
+int main() {
+
+}
