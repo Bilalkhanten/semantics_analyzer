@@ -33,7 +33,6 @@ class Decl : public Node
 
   public:
     Decl() : id(NULL) {}
-    void BuildScope(SymbolTable* parentScope) { }
     Decl(Identifier *name);
     virtual const char* GetDeclName() { return id->GetName(); }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }

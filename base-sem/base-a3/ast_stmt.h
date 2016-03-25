@@ -38,7 +38,6 @@ class SymbolTable {
     Node* CheckDecl(NamedType* d);
     Node* CheckDecl(const char* d);
     void AddDecl(Decl* newEntry, bool overwrite);
-    void AddDecl(FnDecl* newEntry, bool overwrite);
     Hashtable<Node*>* getHashTablePointer();
 };
 
@@ -63,7 +62,7 @@ class Stmt : public Node
      SymbolTable* localScope;
 
   public:
-     Stmt() : Node() {}
+     Stmt() : Node() { }
      Stmt(yyltype loc) : Node(loc) {}
 };
 
