@@ -1,7 +1,7 @@
-/* 
+/*
  * Bison input file to generate the parser for the compiler.
  *
- * Assignment 3: 
+ * Assignment 3:
  * -------------
  * The rules and tree construction are provided as per the
  * requirements of Assignment 2.  Feel free to change them to your
@@ -69,11 +69,11 @@ void yyerror(const char *msg); // standard error-handling routine
     ForStmt *forStmt;
     ReturnStmt *returnStmt;
     BreakStmt *breakStmt;
-    PrintStmt *printStmt;	
+    PrintStmt *printStmt;
     Case *caseStmt;
     List<Case*> *caseList;
     Default *defaultStmt;
-    SwitchStmt *switchStmt;    
+    SwitchStmt *switchStmt;
     LValue *lvalue;
 }
 
@@ -189,12 +189,13 @@ void yyerror(const char *msg); // standard error-handling routine
 
 
 
+
 Program   :    DeclP                {
                                       @1;
                                       Program *program = new Program($1);
                                       // if no errors, advance to next phase
-                                      if (ReportError::NumErrors() == 0) 
-                                          program->Check(); 
+                                      if (ReportError::NumErrors() == 0)
+                                          program->Check();
 
                                       /* Below is the Assignment 2
                                          call (which you can uncomment
@@ -287,7 +288,7 @@ FieldS    :    FieldS Field         { ($$ = $1)->Append($2); }
           |                         { $$ = new List<Decl*>; }
           ;
 
-ClassDecl :    T_Class T_Identifier ExtendsO ImplementsO '{' FieldS '}' 
+ClassDecl :    T_Class T_Identifier ExtendsO ImplementsO '{' FieldS '}'
 {
                                       Identifier *id = new Identifier(@2, $2);
                                       $$ = new ClassDecl(id, $3, $4, $6);
@@ -522,6 +523,7 @@ Constant  :    T_IntConstant        { $$ = new IntConstant(@1, $1); }
           |    T_Null               { $$ = new NullConstant(@1); }
           ;
 
+
 %%
 
 /* The closing %% above marks the end of the Rules section and the beginning
@@ -546,5 +548,5 @@ Constant  :    T_IntConstant        { $$ = new IntConstant(@1, $1); }
 void InitParser()
 {
    PrintDebug("parser", "Initializing parser");
-   yydebug = false;
+   yydebug = true;
 }

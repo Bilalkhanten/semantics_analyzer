@@ -39,6 +39,7 @@ void ClassDecl::PrintChildren(int indentLevel) {
 }
 
 void ClassDecl::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
     localScope->SetParentTable(s);
 
     SymbolTable* current = s;
@@ -153,6 +154,7 @@ const char* FnDecl::GetDeclName(){
 }
 
 void FnDecl::BuildScope(SymbolTable* parentScope){
+    formalsTable = new SymbolTable();
     formalsTable->SetParentTable(parentScope);
     for (int i = 0; i < formals->NumElements(); i++){
         Node* n = formalsTable->CheckDecl(formals->Nth(i));
@@ -164,7 +166,6 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
         }
         formalsTable->AddDecl(formals->Nth(i), overwrite);
     }
-
     body->BuildScope(formalsTable);
 }
 

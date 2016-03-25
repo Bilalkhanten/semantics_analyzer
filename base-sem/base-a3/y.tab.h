@@ -165,11 +165,11 @@ typedef union YYSTYPE
     ForStmt *forStmt;
     ReturnStmt *returnStmt;
     BreakStmt *breakStmt;
-    PrintStmt *printStmt;	
+    PrintStmt *printStmt;
     Case *caseStmt;
     List<Case*> *caseList;
     Default *defaultStmt;
-    SwitchStmt *switchStmt;    
+    SwitchStmt *switchStmt;
     LValue *lvalue;
 
 

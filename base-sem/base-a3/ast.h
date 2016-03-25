@@ -62,9 +62,9 @@ class Node  {
     void SetParent(Node *p)  { parent = p; }
     Node *GetParent()        { return parent; }
     bool needsSymbolTable()  { return false;}
-    void Check() { }
-    void BuildScope() { }
-    void BuildScope(SymbolTable* parentScope) { }
+    virtual void Check() { }
+    virtual void BuildScope() { }
+    virtual void BuildScope(SymbolTable* parentScope) { }
     virtual const char *GetPrintNameForNode() = 0;
 
     // Print() is deliberately _not_ virtual

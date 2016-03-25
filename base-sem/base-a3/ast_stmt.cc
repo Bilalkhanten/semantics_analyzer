@@ -9,7 +9,7 @@
 using namespace std;
 
 SymbolTable::SymbolTable(){
-    this->symbolTable = new Hashtable<Node*>;
+    this->symbolTable = new Hashtable<Node*>();
 }
 
 Hashtable<Node*>* SymbolTable::getHashTablePointer(){
@@ -18,19 +18,6 @@ Hashtable<Node*>* SymbolTable::getHashTablePointer(){
 
 void SymbolTable::AddDecl(Decl* newEntry, bool overwrite){
     symbolTable->Enter(newEntry->GetDeclName(), newEntry, overwrite);
-}
-
-void SymbolTable::AddDecl(FnDecl* newEntry, bool overwrite){
-    char result[100];
-    strcpy(result, newEntry->GetDeclName());
-    List<VarDecl*>* formals = newEntry->GetFormals();
-
-    for(int i = 0; i < formals->NumElements(); i++){
-       strcat(result, formals->Nth(i)->GetType()->GetTypeName());
-    }
-
-    const char* temp = result;
-    symbolTable->Enter(result, newEntry, overwrite);
 }
 
 Node* SymbolTable::CheckDecl(const char* t){
@@ -78,10 +65,9 @@ void Program::Check() {
      if(needsSymbolTable() == true){
         this->globalSymbolTable = symbolT;
      }
-
+     globalSymbolTable =  new SymbolTable();
      //Build the symbol table
-     this->BuildScope();
-     cout << "BuiltScope";
+     BuildScope();
      //Check everything
      for (int i = 0; i < decls->NumElements(); i++){
         decls->Nth(i)->Check();
@@ -91,16 +77,16 @@ void Program::Check() {
 void Program::BuildScope(){
     this->globalSymbolTable->SetParentTable(NULL);
     for (int i = 0; i < decls->NumElements(); i++){
-        Node* n = this->globalSymbolTable->CheckDecl(decls->Nth(i)->GetDeclName());
+        Decl* d = decls->Nth(i);
+        Node* n = this->globalSymbolTable->CheckDecl(d->GetDeclName());
         bool overwrite = false;
         if(n != NULL){
             cout << endl <<"Error: Duplicate declarations." << endl;
             //Throw error and return
             return;
         }
-        this->globalSymbolTable->AddDecl(decls->Nth(i), overwrite);
+        this->globalSymbolTable->AddDecl(d, overwrite);
     }
-
     for (int i = 0; i < decls->NumElements(); i++){
         decls->Nth(i)->BuildScope(this->globalSymbolTable);
     }
@@ -123,6 +109,7 @@ void StmtBlock::PrintChildren(int indentLevel) {
 }
 
 void StmtBlock::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
     localScope->SetParentTable(s);
     for(int i = 0; i < decls->NumElements(); i++){
         Node* n = localScope->CheckDecl(decls->Nth(i)->GetDeclName());
@@ -146,6 +133,7 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
 }
 
 void ConditionalStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
     localScope->SetParentTable(s);
     body->BuildScope(s);
 }
@@ -164,6 +152,7 @@ void ForStmt::PrintChildren(int indentLevel) {
 }
 
 void ForStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
     localScope->SetParentTable(s);
     body->BuildScope(s);
 }
@@ -174,6 +163,7 @@ void WhileStmt::PrintChildren(int indentLevel) {
 }
 
 void WhileStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
     localScope->SetParentTable(s);
     body->BuildScope(s);
 }
@@ -190,6 +180,9 @@ void IfStmt::PrintChildren(int indentLevel) {
     if (elseBody) elseBody->Print(indentLevel+1, "(else) ");
 }
 
+void IfStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
+}
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     Assert(e != NULL);
@@ -227,6 +220,7 @@ void SwitchLabel::PrintChildren(int indentLevel) {
 }
 
 void SwitchLabel::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
     localScope->SetParentTable(s);
     for(int i = 0; i < stmts->NumElements(); i++){
         stmts->Nth(i)->BuildScope(s);
