@@ -35,7 +35,7 @@ class Decl : public Node
     Decl() : id(NULL) {}
     void BuildScope(SymbolTable* parentScope) { }
     Decl(Identifier *name);
-    const char* GetDeclName() { return id->GetName(); }
+    virtual const char* GetDeclName() { return id->GetName(); }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -103,6 +103,7 @@ class FnDecl : public Decl
     void SetFunctionBody(Stmt *b);
     List<VarDecl*>* GetFormals() { return formals; }
     void BuildScope(SymbolTable* s);
+    const char *GetDeclName();
     const char *GetPrintNameForNode() { return "FnDecl"; }
     void PrintChildren(int indentLevel);
 };

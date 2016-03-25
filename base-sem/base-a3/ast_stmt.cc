@@ -6,6 +6,7 @@
 #include "ast_decl.h"
 #include "ast_expr.h"
 
+using namespace std;
 
 SymbolTable::SymbolTable(){
     this->symbolTable = new Hashtable<Node*>;
@@ -30,6 +31,10 @@ void SymbolTable::AddDecl(FnDecl* newEntry, bool overwrite){
 
     const char* temp = result;
     symbolTable->Enter(result, newEntry, overwrite);
+}
+
+Node* SymbolTable::CheckDecl(const char* t){
+    return symbolTable->Lookup(t);
 }
 
 Node* SymbolTable::CheckDecl(Decl* d){
@@ -75,8 +80,8 @@ void Program::Check() {
      }
 
      //Build the symbol table
-     BuildScope();
-
+     this->BuildScope();
+     cout << "BuiltScope";
      //Check everything
      for (int i = 0; i < decls->NumElements(); i++){
         decls->Nth(i)->Check();
@@ -86,9 +91,10 @@ void Program::Check() {
 void Program::BuildScope(){
     this->globalSymbolTable->SetParentTable(NULL);
     for (int i = 0; i < decls->NumElements(); i++){
-        Node* n = this->globalSymbolTable->getHashTablePointer()->Lookup( decls->Nth(i)->GetDeclName() );
+        Node* n = this->globalSymbolTable->CheckDecl(decls->Nth(i)->GetDeclName());
         bool overwrite = false;
         if(n != NULL){
+            cout << endl <<"Error: Duplicate declarations." << endl;
             //Throw error and return
             return;
         }
@@ -119,7 +125,7 @@ void StmtBlock::PrintChildren(int indentLevel) {
 void StmtBlock::BuildScope(SymbolTable* s){
     localScope->SetParentTable(s);
     for(int i = 0; i < decls->NumElements(); i++){
-        Node* n = localScope->getHashTablePointer()->Lookup(decls->Nth(i)->GetDeclName());
+        Node* n = localScope->CheckDecl(decls->Nth(i)->GetDeclName());
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return

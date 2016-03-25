@@ -138,13 +138,28 @@ void FnDecl::PrintChildren(int indentLevel) {
     if (body) body->Print(indentLevel+1, "(body) ");
 }
 
+const char* FnDecl::GetDeclName(){
+    char result[100];
+    strcpy(result, id->GetName());
+
+    strcpy(result, returnType->GetTypeName());
+
+    for(int i = 0; i < formals->NumElements(); i++){
+       strcat(result, formals->Nth(i)->GetType()->GetTypeName());
+    }
+
+    const char* temp = result;
+    return temp;
+}
+
 void FnDecl::BuildScope(SymbolTable* parentScope){
     formalsTable->SetParentTable(parentScope);
     for (int i = 0; i < formals->NumElements(); i++){
-        Node* n = formalsTable->getHashTablePointer()->Lookup(formals->Nth(i)->GetDeclName());
+        Node* n = formalsTable->CheckDecl(formals->Nth(i));
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return
+            cout << "Error: Duplicate variable declaration." << endl;
             return;
         }
         formalsTable->AddDecl(formals->Nth(i), overwrite);

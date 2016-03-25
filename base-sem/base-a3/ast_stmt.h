@@ -36,6 +36,7 @@ class SymbolTable {
     Node* CheckDecl(Decl* d);
     Node* CheckDecl(FnDecl* d);
     Node* CheckDecl(NamedType* d);
+    Node* CheckDecl(const char* d);
     void AddDecl(Decl* newEntry, bool overwrite);
     void AddDecl(FnDecl* newEntry, bool overwrite);
     Hashtable<Node*>* getHashTablePointer();
