@@ -32,7 +32,7 @@ class Type : public Node
 
     const char *GetPrintNameForNode() { return "Type"; }
     void PrintChildren(int indentLevel);
-    char* GetTypeName() { return typeName; }
+    virtual const char* GetTypeName() { return typeName; }
     virtual void PrintToStream(ostream& out) { out << typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
 };

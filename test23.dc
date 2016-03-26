@@ -1,8 +1,0 @@
-int x;
-
-/* Incorrect HEX_INTEGER value */
-
-int main() {
-
-x = dd3s;
-}

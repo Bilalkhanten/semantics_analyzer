@@ -1,0 +1,8 @@
+string x;
+
+/* initializing a string with single quotes */
+
+int main() {
+
+x = "hello world;
+}

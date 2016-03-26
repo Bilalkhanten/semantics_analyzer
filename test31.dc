@@ -1,6 +1,0 @@
-
-/* putting a bool in the param for main */
-
-int main() {
-    return 0;
-}

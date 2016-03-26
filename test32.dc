@@ -1,7 +1,0 @@
-string x;
-
-/* putting a double in a string */
-
-int main() {
-    x = 10.0;
-}

@@ -1,0 +1,11 @@
+int x;
+
+class Batman extends x {
+    int w;
+}
+
+/* see if it allows extending an int */
+
+int main() {
+
+}

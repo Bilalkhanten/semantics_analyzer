@@ -1,0 +1,5 @@
+#! /bin/sh
+dcc
+&& rm *.jar \
+&& svn co path to repo \
+&& mvn compile package install

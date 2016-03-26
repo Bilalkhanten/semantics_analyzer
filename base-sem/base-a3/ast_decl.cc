@@ -21,16 +21,16 @@ void VarDecl::PrintChildren(int indentLevel) {
    type->Print(indentLevel+1);
    id->Print(indentLevel+1);
 }
-
+/**
 const char* VarDecl::GetDeclName(){
     char result[100];
-    strcpy(result, id->GetName());
 
+    strcpy(result, id->GetName());
     strcpy(result, type->GetTypeName());
 
     const char* temp = result;
     return temp;
-}
+}**/
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
     // extends can be NULL, impl & mem may be empty lists but cannot be NULL
@@ -52,10 +52,12 @@ void ClassDecl::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
 
-    SymbolTable* current = s;
+    SymbolTable* current = new SymbolTable();
+    current = s;
     bool found = false;
 
     if(extends){
+        extendedScope = new SymbolTable();
         while(current != NULL && !found){
             Node* n = current->CheckDecl(extends);
             if(n != NULL){
@@ -66,12 +68,13 @@ void ClassDecl::BuildScope(SymbolTable* s){
             current = current->GetParentTable();
         }
         if(!found){
-            //Throw error, missing implementation of a class
+            cout << "Error: Missing class to extend.";
             return;
         }
     }
 
     if(implements){
+        implementedScope = new List<SymbolTable*>();
         current = s;
         found = false;
         int count = implements->NumElements();
@@ -98,8 +101,9 @@ void ClassDecl::BuildScope(SymbolTable* s){
             }
             current = current->GetParentTable();
         }
-        if(!found){
+        if(count != 0){
             //Throw error, missing implementation of an interface
+            cout << "Missing Implementation.";
             return;
         }
     }
@@ -109,7 +113,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
         Node* n = localScope->CheckDecl(curr);
         bool overwrite = false;
         if(n != NULL){
-           //Throw error
+            cout << "Error: Duplicate class declarations.";
             return;
         }
         localScope->AddDecl(curr, overwrite);
@@ -140,6 +144,7 @@ void InterfaceDecl::BuildScope(SymbolTable* s){
         bool overwrite = false;
         if (n != NULL){
             //Throw error
+            cout << "Error: Duplicate declarations.";
             return;
         }
         scopeTable->AddDecl(d, overwrite);
@@ -174,10 +179,10 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
         if(n != NULL){
             //Throw error and return
             cout << "Error: Duplicate variable declaration." << endl;
-            return;
         }
         formalsTable->AddDecl(formals->Nth(i), overwrite);
     }
+
     if(body != NULL){
         body->BuildScope(formalsTable);
     }

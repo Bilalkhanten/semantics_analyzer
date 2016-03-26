@@ -1,6 +1,0 @@
-
-/* putting int in params for main */
-
-int main(int a) {
-
-}
