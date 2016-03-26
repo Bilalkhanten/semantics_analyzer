@@ -1,8 +1,0 @@
-int x;
-
-/* way too large integer */
-
-int main() {
-
-x = 1000000000000000000;
-}

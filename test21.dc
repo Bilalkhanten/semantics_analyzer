@@ -1,8 +1,0 @@
-double x;
-
-/* Incorrectly initializing a double without a decimal point */
-
-int main() {
-
-x = 10;
-}

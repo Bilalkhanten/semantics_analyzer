@@ -67,9 +67,9 @@ void Program::BuildScope(){
         Node* n = this->globalSymbolTable->CheckDecl(d->GetDeclName());
         bool overwrite = false;
         if(n != NULL){
-            cout << endl <<"Error: Duplicate declarations." << endl;
+            cout << endl <<"Error: Duplicate global declarations." << endl;
             //Throw error and return
-            return;
+            //return;
         }
         this->globalSymbolTable->AddDecl(d, overwrite);
     }
@@ -106,7 +106,6 @@ void StmtBlock::BuildScope(SymbolTable* s){
         }
         localScope->AddDecl(decls->Nth(i), overwrite);
     }
-
     for(int i = 0; i < stmts->NumElements(); i++){
         stmts->Nth(i)->BuildScope(localScope);
     }

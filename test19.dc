@@ -1,8 +1,0 @@
-int x;
-
-/* Setting a bool to an int */
-
-int main() {
-
-x = false;
-}
