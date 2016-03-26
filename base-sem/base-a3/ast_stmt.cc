@@ -167,6 +167,13 @@ void IfStmt::PrintChildren(int indentLevel) {
 
 void IfStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
+    localScope->SetParentTable(s);
+
+    body->BuildScope(s);
+
+    if(elsebody){
+        elsebody->BuildScope(s);
+    }
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
