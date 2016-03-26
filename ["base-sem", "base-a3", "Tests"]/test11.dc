@@ -1,6 +1,0 @@
-
-/* Incorrect entry point */
-
-int notMain() {
-
-}

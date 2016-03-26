@@ -34,7 +34,6 @@ class SymbolTable {
     void SetParentTable(SymbolTable* parentTable) { this->parentTable = parentTable;}
     SymbolTable* GetParentTable() { return parentTable; }
     Node* CheckDecl(Decl* d);
-    Node* CheckDecl(FnDecl* d);
     Node* CheckDecl(NamedType* d);
     Node* CheckDecl(const char* d);
     void AddDecl(Decl* newEntry, bool overwrite);

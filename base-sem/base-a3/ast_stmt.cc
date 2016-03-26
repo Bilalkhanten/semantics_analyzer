@@ -28,20 +28,6 @@ Node* SymbolTable::CheckDecl(Decl* d){
     return symbolTable->Lookup(d->GetDeclName());
 }
 
-Node* SymbolTable::CheckDecl(FnDecl* d){
-    char result[100];
-    strcpy(result, d->GetDeclName());
-    List<VarDecl*>* formals = d->GetFormals();
-
-    for(int i = 0; i < formals->NumElements(); i++){
-       strcat(result, formals->Nth(i)->GetType()->GetTypeName());
-    }
-
-    const char* temp = result;
-
-    return symbolTable->Lookup(temp);
-}
-
 Node* SymbolTable::CheckDecl(NamedType* t){
     return symbolTable->Lookup(t->GetTypeName());
 }

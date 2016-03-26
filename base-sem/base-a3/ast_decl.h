@@ -47,6 +47,7 @@ class VarDecl : public Decl
     VarDecl() : type(NULL) {}
     VarDecl(Identifier *name, Type *type);
     Type* GetType() { return type; }
+    const char* GetDeclName();
     const char *GetPrintNameForNode() { return "VarDecl"; }
     void PrintChildren(int indentLevel);
 };
@@ -85,6 +86,7 @@ class InterfaceDecl : public Decl
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
     const char *GetPrintNameForNode() { return "InterfaceDecl"; }
+    void BuildScope(SymbolTable* s);
     void PrintChildren(int indentLevel);
 };
 
@@ -102,7 +104,7 @@ class FnDecl : public Decl
     void SetFunctionBody(Stmt *b);
     List<VarDecl*>* GetFormals() { return formals; }
     void BuildScope(SymbolTable* s);
-    const char *GetDeclName();
+    const char* GetDeclName() { return id->GetName(); }
     const char *GetPrintNameForNode() { return "FnDecl"; }
     void PrintChildren(int indentLevel);
 };
