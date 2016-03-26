@@ -22,6 +22,16 @@ void VarDecl::PrintChildren(int indentLevel) {
    id->Print(indentLevel+1);
 }
 
+const char* VarDecl::GetDeclName(){
+    char result[100];
+    strcpy(result, id->GetName());
+
+    strcpy(result, type->GetTypeName());
+
+    const char* temp = result;
+    return temp;
+}
+
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
     // extends can be NULL, impl & mem may be empty lists but cannot be NULL
     Assert(n != NULL && imp != NULL && m != NULL);
@@ -120,6 +130,22 @@ void InterfaceDecl::PrintChildren(int indentLevel) {
     members->PrintAll(indentLevel+1);
 }
 
+void InterfaceDecl::BuildScope(SymbolTable* s){
+    scopeTable = new SymbolTable();
+    scopeTable->SetParentTable(s);
+
+    for (int i = 0; i < members->NumElements(); i++){
+        Decl* d = members->Nth(i);
+        Node* n = scopeTable->CheckDecl(d->GetDeclName());
+        bool overwrite = false;
+        if (n != NULL){
+            //Throw error
+            return;
+        }
+        scopeTable->AddDecl(d, overwrite);
+    }
+}
+
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
     Assert(n != NULL && r!= NULL && d != NULL);
     (returnType=r)->SetParent(this);
@@ -139,20 +165,6 @@ void FnDecl::PrintChildren(int indentLevel) {
     if (body) body->Print(indentLevel+1, "(body) ");
 }
 
-const char* FnDecl::GetDeclName(){
-    char result[100];
-    strcpy(result, id->GetName());
-
-    strcpy(result, returnType->GetTypeName());
-
-    for(int i = 0; i < formals->NumElements(); i++){
-       strcat(result, formals->Nth(i)->GetType()->GetTypeName());
-    }
-
-    const char* temp = result;
-    return temp;
-}
-
 void FnDecl::BuildScope(SymbolTable* parentScope){
     formalsTable = new SymbolTable();
     formalsTable->SetParentTable(parentScope);
@@ -166,6 +178,8 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
         }
         formalsTable->AddDecl(formals->Nth(i), overwrite);
     }
-    body->BuildScope(formalsTable);
+    if(body != NULL){
+        body->BuildScope(formalsTable);
+    }
 }
 
