@@ -1,8 +1,0 @@
-int x;
-string x;
-
-/* Same var names */
-
-int main() {
-    x = 10.0;
-}

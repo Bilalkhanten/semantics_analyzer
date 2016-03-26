@@ -1,6 +1,0 @@
-
-/* Incorrect main params */
-
-int main(imWrong) {
-
-}

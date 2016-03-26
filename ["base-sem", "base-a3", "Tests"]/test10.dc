@@ -1,8 +1,0 @@
-int x;
-x = 566932233;
-
-/* Correct global creation of an integer and setting it to a correct large value */
-
-int main() {
-
-}

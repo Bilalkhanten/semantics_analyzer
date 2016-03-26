@@ -1,8 +1,0 @@
-int x = y;
-
-/* initializing a var in global scope and trying to set it to a main var */
-
-int main() {
-    int y;
-    y = 10;
-}
