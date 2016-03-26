@@ -1,0 +1,20 @@
+class Human {
+    int age;
+    string firstName;
+    double height;
+    bool isMarried;
+
+    void Human(int age) {
+    this.age = age;
+    firstName = "joe";
+    height = 193.5;
+    isMarried = false;
+    }
+
+}
+
+/*  see if it accepts a variable of the same name as a member var in the constructor */
+
+int main() {
+
+}
