@@ -62,6 +62,7 @@ class Stmt : public Node
 
   public:
      Stmt() : Node() { }
+     virtual void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; }
      Stmt(yyltype loc) : Node(loc) {}
 };
 
