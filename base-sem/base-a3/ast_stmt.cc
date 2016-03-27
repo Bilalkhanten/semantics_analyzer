@@ -171,8 +171,8 @@ void IfStmt::BuildScope(SymbolTable* s){
 
     body->BuildScope(s);
 
-    if(elsebody){
-        elsebody->BuildScope(s);
+    if(elseBody){
+        elseBody->BuildScope(s);
     }
 }
 
@@ -225,6 +225,15 @@ SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {
     (cases=c)->SetParentAll(this);
     def = d;
     if (def) def->SetParent(this);
+}
+
+void SwitchStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
+    localScope->SetParentTable(s);
+
+    for (int i = 0; i < cases->NumElements(); i++){
+        cases->Nth(i)->BuildScope(localScope);
+    }
 }
 
 void SwitchStmt::PrintChildren(int indentLevel) {
