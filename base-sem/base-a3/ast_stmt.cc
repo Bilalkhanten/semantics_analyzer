@@ -103,7 +103,7 @@ void StmtBlock::BuildScope(SymbolTable* s){
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return
-            ReportError::DeclConflict(this, n); //Not sure what to throw here so throwing this.
+            ReportError::DeclConflict(decls->Nth(i), n); //Not sure what to throw here so throwing this.
             return;
         }
         localScope->AddDecl(decls->Nth(i), overwrite);
