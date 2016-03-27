@@ -70,6 +70,8 @@ class ClassDecl : public Decl
     ClassDecl(Identifier *name, NamedType *extends,
               List<NamedType*> *implements, List<Decl*> *members);
     void BuildScope(SymbolTable* s);
+    SymbolTable* GetExtendScope() { return extendedScope; }
+    List<SymbolTable*>* GetImplementScope() { return implementedScope; }
     const char *GetPrintNameForNode() { return "ClassDecl"; }
     void PrintChildren(int indentLevel);
 };

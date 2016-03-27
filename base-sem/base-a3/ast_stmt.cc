@@ -32,6 +32,10 @@ Decl* SymbolTable::CheckDecl(NamedType* t){
     return symbolTable->Lookup(t->GetTypeName());
 }
 
+void SymbolTable::SetClassDecl(ClassDecl* d){
+    this->decl = d;
+}
+
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
