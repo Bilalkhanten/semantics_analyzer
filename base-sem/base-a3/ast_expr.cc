@@ -95,6 +95,8 @@ void AssignExpr::Check(){
 void AssignExpr::BuildScope(SymbolTable* s){
     left->BuildScope(s);
     right->BuildScope(s);
+
+
 }
 
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
@@ -123,10 +125,36 @@ void FieldAccess::PrintChildren(int indentLevel) {
 
 void FieldAccess::Check(){
     Assert(localScope != NULL);
+
     Decl* n = localScope->CheckDecl(field->GetName());
     SymbolTable* current = new SymbolTable();
     current = localScope;
     bool found = false;
+
+    if(base){
+        if(current->GetParentTable() == NULL){
+            //this. was used outside a class declaration.
+            This* t = new This(*location);
+            ReportError::ThisOutsideClassScope(t);
+        }
+
+        //Get top level class declarations
+        SymbolTable* parentT = new SymbolTable();
+        SymbolTable* classT = new SymbolTable();
+
+        while(current->GetParentTable() != NULL){
+            classT = current;
+            current = current->GetParentTable();
+            parentT = current;
+        }
+
+        Decl* n = classT->CheckDecl(field->GetName());
+        if(n == NULL){
+            ReportError::IdentifierNotDeclared(field, LookingForVariable);
+        }
+
+        return;
+    }
 
     while(current != NULL && !found){
         n = current->CheckDecl(field->GetName());
