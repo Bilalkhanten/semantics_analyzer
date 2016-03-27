@@ -132,15 +132,16 @@ void FieldAccess::Check(){
     bool found = false;
 
     if(base){
+        //Get top level class declarations
+        SymbolTable* parentT = new SymbolTable();
+        SymbolTable* classT = new SymbolTable();
+
         if(current->GetParentTable() == NULL){
             //this. was used outside a class declaration.
             This* t = new This(*location);
             ReportError::ThisOutsideClassScope(t);
+            return;
         }
-
-        //Get top level class declarations
-        SymbolTable* parentT = new SymbolTable();
-        SymbolTable* classT = new SymbolTable();
 
         while(current->GetParentTable() != NULL){
             classT = current;
@@ -148,8 +149,32 @@ void FieldAccess::Check(){
             parentT = current;
         }
 
+        if(current->GetClassDecl() == NULL){
+            This* t = new This(*location);
+            ReportError::ThisOutsideClassScope(t);
+            return;
+        }
+
         Decl* n = classT->CheckDecl(field->GetName());
+        ClassDecl* c = classT->GetClassDecl();
+
         if(n == NULL){
+            SymbolTable* extends = c->GetExtendScope();
+            Decl* temp = extends->CheckDecl(field->GetName());
+
+            if(temp != NULL){
+                return;
+            }
+
+            List<SymbolTable*>* implements = c->GetImplementScope();
+            for (int i = 0; i < implements->NumElements(); i++){
+                SymbolTable* implement = implements->Nth(i);
+                temp = implement->CheckDecl(field->GetName());
+                if(temp != NULL){
+                    return;
+                }
+            }
+
             ReportError::IdentifierNotDeclared(field, LookingForVariable);
         }
 

@@ -21,11 +21,13 @@ class FnDecl;
 class Expr;
 class IntConstant;
 class NamedType;
+class ClassDecl;
 
 void yyerror(const char *msg);
 
 class SymbolTable {
   private:
+    ClassDecl* decl;
     Hashtable<Decl*>* symbolTable;
     SymbolTable* parentTable;
 
@@ -36,6 +38,8 @@ class SymbolTable {
     Decl* CheckDecl(Decl* d);
     Decl* CheckDecl(NamedType* d);
     Decl* CheckDecl(const char* d);
+    void SetClassDecl(ClassDecl* d);
+    ClassDecl* GetClassDecl() { return decl; }
     void AddDecl(Decl* newEntry, bool overwrite);
     Hashtable<Decl*>* getHashTablePointer();
 };

@@ -53,6 +53,18 @@ void ClassDecl::BuildScope(SymbolTable* s){
     SymbolTable* current = new SymbolTable();
     current = s;
     bool found = false;
+    localScope->SetClassDecl(this);
+
+    for(int i = 0; i < members->NumElements(); i++){
+        Decl* curr = members->Nth(i);
+        Decl* n = localScope->CheckDecl(curr);
+        bool overwrite = false;
+        if(n != NULL){
+            ReportError::DeclConflict(curr, n);
+            return;
+        }
+        localScope->AddDecl(curr, overwrite);
+    }
 
     if(extends){
         extendedScope = new SymbolTable();
@@ -96,17 +108,6 @@ void ClassDecl::BuildScope(SymbolTable* s){
                 implementedScope->Append(current);
             }
         }
-    }
-
-    for(int i = 0; i < members->NumElements(); i++){
-        Decl* curr = members->Nth(i);
-        Decl* n = localScope->CheckDecl(curr);
-        bool overwrite = false;
-        if(n != NULL){
-            ReportError::DeclConflict(curr, n);
-            return;
-        }
-        localScope->AddDecl(curr, overwrite);
     }
 
     for(int i = 0; i < members->NumElements(); i++){
