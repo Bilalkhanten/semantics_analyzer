@@ -206,6 +206,7 @@ class SwitchStmt : public Stmt
     SwitchStmt() : expr(NULL), cases(NULL), def(NULL) {}
     SwitchStmt(Expr *expr, List<Case*> *cases, Default *def);
     const char *GetPrintNameForNode() { return "SwitchStmt"; }
+    void BuildScope(SymbolTable* s);
     void PrintChildren(int indentLevel);
 };
 

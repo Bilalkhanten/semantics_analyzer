@@ -1,0 +1,11 @@
+int main(){
+	bool x;
+	bool y;
+	x = true;
+	y = false;
+	while(x && !y){
+		int t;
+		t = 0;
+		x = false;
+	}
+}
