@@ -28,13 +28,15 @@ class Decl : public Node
 {
   protected:
     Identifier *id;
-    SymbolTable* parentTable;
+    List<Type*>* types;
     SymbolTable* scopeTable;
 
   public:
     Decl() : id(NULL) {}
     Decl(Identifier *name);
     virtual Identifier* GetID() { return id; }
+    virtual List<Type*>* GetTypes() { return types; }
+    virtual Type* GetType() { return NULL; }
     virtual const char* GetDeclName() { return id->GetName(); }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
@@ -48,6 +50,7 @@ class VarDecl : public Decl
     VarDecl() : type(NULL) {}
     VarDecl(Identifier *name, Type *type);
     Type* GetType() { return type; }
+    void BuildScope(SymbolTable* s);
     const char *GetPrintNameForNode() { return "VarDecl"; }
     void PrintChildren(int indentLevel);
 };
@@ -104,6 +107,7 @@ class FnDecl : public Decl
     void SetFunctionBody(Stmt *b);
     List<VarDecl*>* GetFormals() { return formals; }
     void BuildScope(SymbolTable* s);
+    Type* GetType() { return returnType; }
     const char* GetDeclName() { return id->GetName(); }
     const char *GetPrintNameForNode() { return "FnDecl"; }
     void PrintChildren(int indentLevel);

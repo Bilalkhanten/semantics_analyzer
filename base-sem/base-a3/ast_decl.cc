@@ -21,16 +21,14 @@ void VarDecl::PrintChildren(int indentLevel) {
    type->Print(indentLevel+1);
    id->Print(indentLevel+1);
 }
-/**
-const char* VarDecl::GetDeclName(){
-    char result[100];
 
-    strcpy(result, id->GetName());
-    strcpy(result, type->GetTypeName());
+void VarDecl::BuildScope(SymbolTable* s){
+    scopeTable = new SymbolTable();
+    types = new List<Type*>();
 
-    const char* temp = result;
-    return temp;
-}**/
+    scopeTable = s;
+    types->Append(type);
+}
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
     // extends can be NULL, impl & mem may be empty lists but cannot be NULL
@@ -164,14 +162,17 @@ void FnDecl::PrintChildren(int indentLevel) {
 
 void FnDecl::BuildScope(SymbolTable* parentScope){
     formalsTable = new SymbolTable();
+    types = new List<Type*>();
     formalsTable->SetParentTable(parentScope);
     for (int i = 0; i < formals->NumElements(); i++){
         Decl* n = formalsTable->CheckDecl(formals->Nth(i));
+
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return
             ReportError::DeclConflict(this, n);
         }
+        types->Append(formals->Nth(i)->GetType());
         formalsTable->AddDecl(formals->Nth(i), overwrite);
     }
 
