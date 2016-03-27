@@ -1,5 +1,4 @@
 double x;
-x = true;
 
 /* Setting a bool to a double */
 

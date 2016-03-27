@@ -4,5 +4,5 @@ string x;
 
 int main() {
 
-x = "hello world;
+x = "hello world";
 }

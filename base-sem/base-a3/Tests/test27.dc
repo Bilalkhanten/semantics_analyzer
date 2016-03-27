@@ -1,5 +1,5 @@
 string x;
-x = "Hello there1";
+
 
 /* correctly initializing a string */
 

@@ -13,5 +13,6 @@ class Human {
 }
 
 int main() {
-    Human x = new Human;
+    Human x;
+    x = new Human;
 }
