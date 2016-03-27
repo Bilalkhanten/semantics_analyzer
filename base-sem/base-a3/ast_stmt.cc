@@ -113,6 +113,12 @@ void StmtBlock::BuildScope(SymbolTable* s){
     }
 }
 
+void StmtBlock::Check(){
+    for(int i = 0; i < stmts->NumElements(); i++){
+        stmts->Nth(i)->Check();
+    }
+}
+
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     Assert(t != NULL && b != NULL);
     (test=t)->SetParent(this);

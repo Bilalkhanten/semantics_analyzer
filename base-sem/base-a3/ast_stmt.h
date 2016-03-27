@@ -75,6 +75,7 @@ class StmtBlock : public Stmt
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
     void BuildScope(SymbolTable* s);
+    void Check();
     const char *GetPrintNameForNode() { return "StmtBlock"; }
     void PrintChildren(int indentLevel);
 };

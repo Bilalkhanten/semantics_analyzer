@@ -181,3 +181,9 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
     }
 }
 
+void FnDecl::Check(){
+    if(body != NULL){
+        body->Check();
+    }
+}
+

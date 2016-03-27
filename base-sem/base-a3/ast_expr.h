@@ -23,6 +23,7 @@ class Expr : public Stmt
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
+    void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
 };
 
 class ExprError : public Expr
@@ -115,6 +116,7 @@ class CompoundExpr : public Expr
   public:
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
+    void BuildScope(SymbolTable* s);
     void PrintChildren(int indentLevel);
 };
 
@@ -164,6 +166,7 @@ class AssignExpr : public CompoundExpr
 {
   public:
     void Check();
+    void BuildScope(SymbolTable* s);
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "AssignExpr"; }
 };
@@ -172,6 +175,7 @@ class LValue : public Expr
 {
   public:
     LValue(yyltype loc) : Expr(loc) {}
+    virtual void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); }
 };
 
 class This : public Expr
@@ -204,6 +208,8 @@ class FieldAccess : public LValue
 
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
+    void Check();
+    void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; if(base != NULL) {base->BuildScope(s);} }
     const char *GetPrintNameForNode() { return "FieldAccess"; }
     void PrintChildren(int indentLevel);
 };
