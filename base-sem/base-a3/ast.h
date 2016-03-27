@@ -44,6 +44,7 @@
 #include "location.h"
 #include <iostream>
 #include "hashtable.h"
+#include "errors.h"
 using namespace std;
 
 class SymbolTable;

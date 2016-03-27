@@ -68,7 +68,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
             current = current->GetParentTable();
         }
         if(!found){
-            cout << "Error: Missing class to extend.";
+            cout << "Error: Missing class to extend.";      //probably not needed but pending
             return;
         }
     }
@@ -77,10 +77,11 @@ void ClassDecl::BuildScope(SymbolTable* s){
         implementedScope = new List<SymbolTable*>();
         current = s;
         found = false;
+        Decl* n;
         int count = implements->NumElements();
         while(current != NULL && count != 0 && !found){
             for(int i = 0; i < implements->NumElements(); i++){
-                Decl* n = current->CheckDecl(implements->Nth(i));
+                n = current->CheckDecl(implements->Nth(i));
                 if(n != NULL){
                     count--;
                     found = true;
@@ -103,7 +104,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
         }
         if(count != 0){
             //Throw error, missing implementation of an interface
-            cout << "Missing Implementation.";
+            ReportError::InterfaceNotImplemented(n, extends);
             return;
         }
     }
@@ -113,7 +114,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
         Decl* n = localScope->CheckDecl(curr);
         bool overwrite = false;
         if(n != NULL){
-            cout << "Error: Duplicate class declarations.";
+            ReportError::DeclConflict(curr, n);
             return;
         }
         localScope->AddDecl(curr, overwrite);
@@ -144,7 +145,7 @@ void InterfaceDecl::BuildScope(SymbolTable* s){
         bool overwrite = false;
         if (n != NULL){
             //Throw error
-            cout << "Error: Duplicate declarations.";
+            ReportError::DeclConflict(d, n);
             return;
         }
         scopeTable->AddDecl(d, overwrite);
@@ -178,7 +179,7 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return
-            cout << "Error: Duplicate variable declaration." << endl;
+            ReportError::DeclConflict(this, n);
         }
         formalsTable->AddDecl(formals->Nth(i), overwrite);
     }
