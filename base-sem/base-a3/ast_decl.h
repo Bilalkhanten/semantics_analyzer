@@ -108,6 +108,7 @@ class FnDecl : public Decl
     List<VarDecl*>* GetFormals() { return formals; }
     void BuildScope(SymbolTable* s);
     Type* GetType() { return returnType; }
+    void Check();
     const char* GetDeclName() { return id->GetName(); }
     const char *GetPrintNameForNode() { return "FnDecl"; }
     void PrintChildren(int indentLevel);

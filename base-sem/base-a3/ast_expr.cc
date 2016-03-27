@@ -68,6 +68,13 @@ void CompoundExpr::PrintChildren(int indentLevel) {
    right->Print(indentLevel+1);
 }
 
+void CompoundExpr::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
+    localScope = s;
+    Assert(s != NULL);
+    right->SetScope(s);
+}
+
 PostfixExpr::PostfixExpr(Expr *l,Operator *o)
     : Expr(Join(l->GetLocation(),o->GetLocation())) {
     Assert(o != NULL && l != NULL);
@@ -81,7 +88,13 @@ void PostfixExpr::PrintChildren(int indentLevel) {
 }
 
 void AssignExpr::Check(){
+    left->Check();
+    right->Check();
+}
 
+void AssignExpr::BuildScope(SymbolTable* s){
+    left->BuildScope(s);
+    right->BuildScope(s);
 }
 
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
@@ -107,6 +120,28 @@ void FieldAccess::PrintChildren(int indentLevel) {
     if (base) base->Print(indentLevel+1);
     field->Print(indentLevel+1);
   }
+
+void FieldAccess::Check(){
+    Assert(localScope != NULL);
+    Decl* n = localScope->CheckDecl(field->GetName());
+    SymbolTable* current = new SymbolTable();
+    current = localScope;
+    bool found = false;
+
+    while(current != NULL && !found){
+        n = current->CheckDecl(field->GetName());
+        if(n != NULL){
+            found = true;
+            break;
+        }
+        current = current->GetParentTable();
+    }
+
+    if(!found){
+        ReportError::IdentifierNotDeclared(field, LookingForVariable);
+        return;
+    }
+}
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
