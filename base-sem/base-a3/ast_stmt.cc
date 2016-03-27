@@ -9,10 +9,10 @@
 using namespace std;
 
 SymbolTable::SymbolTable(){
-    this->symbolTable = new Hashtable<Node*>();
+    this->symbolTable = new Hashtable<Decl*>();
 }
 
-Hashtable<Node*>* SymbolTable::getHashTablePointer(){
+Hashtable<Decl*>* SymbolTable::getHashTablePointer(){
     return this->symbolTable;
 }
 
@@ -20,15 +20,15 @@ void SymbolTable::AddDecl(Decl* newEntry, bool overwrite){
     symbolTable->Enter(newEntry->GetDeclName(), newEntry, overwrite);
 }
 
-Node* SymbolTable::CheckDecl(const char* t){
+Decl* SymbolTable::CheckDecl(const char* t){
     return symbolTable->Lookup(t);
 }
 
-Node* SymbolTable::CheckDecl(Decl* d){
+Decl* SymbolTable::CheckDecl(Decl* d){
     return symbolTable->Lookup(d->GetDeclName());
 }
 
-Node* SymbolTable::CheckDecl(NamedType* t){
+Decl* SymbolTable::CheckDecl(NamedType* t){
     return symbolTable->Lookup(t->GetTypeName());
 }
 
@@ -64,7 +64,7 @@ void Program::BuildScope(){
     this->globalSymbolTable->SetParentTable(NULL);
     for (int i = 0; i < decls->NumElements(); i++){
         Decl* d = decls->Nth(i);
-        Node* n = this->globalSymbolTable->CheckDecl(d->GetDeclName());
+        Decl* n = this->globalSymbolTable->CheckDecl(d->GetDeclName());
         bool overwrite = false;
         if(n != NULL){
             cout << endl <<"Error: Duplicate global declarations." << endl;
@@ -99,7 +99,7 @@ void StmtBlock::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
     for(int i = 0; i < decls->NumElements(); i++){
-        Node* n = localScope->CheckDecl(decls->Nth(i)->GetDeclName());
+        Decl* n = localScope->CheckDecl(decls->Nth(i)->GetDeclName());
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return

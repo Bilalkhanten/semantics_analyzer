@@ -26,18 +26,18 @@ void yyerror(const char *msg);
 
 class SymbolTable {
   private:
-    Hashtable<Node*>* symbolTable;
+    Hashtable<Decl*>* symbolTable;
     SymbolTable* parentTable;
 
   public:
     SymbolTable();
     void SetParentTable(SymbolTable* parentTable) { this->parentTable = parentTable;}
     SymbolTable* GetParentTable() { return parentTable; }
-    Node* CheckDecl(Decl* d);
-    Node* CheckDecl(NamedType* d);
-    Node* CheckDecl(const char* d);
+    Decl* CheckDecl(Decl* d);
+    Decl* CheckDecl(NamedType* d);
+    Decl* CheckDecl(const char* d);
     void AddDecl(Decl* newEntry, bool overwrite);
-    Hashtable<Node*>* getHashTablePointer();
+    Hashtable<Decl*>* getHashTablePointer();
 };
 
 class Program : public Node
