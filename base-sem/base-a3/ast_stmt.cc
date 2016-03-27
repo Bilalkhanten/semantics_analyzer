@@ -73,6 +73,7 @@ void Program::BuildScope(){
         }
         this->globalSymbolTable->AddDecl(d, overwrite);
     }
+
     for (int i = 0; i < decls->NumElements(); i++){
         decls->Nth(i)->BuildScope(this->globalSymbolTable);
     }
