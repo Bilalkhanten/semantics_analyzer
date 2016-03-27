@@ -67,7 +67,7 @@ void Program::BuildScope(){
         Decl* n = this->globalSymbolTable->CheckDecl(d->GetDeclName());
         bool overwrite = false;
         if(n != NULL){
-            cout << endl <<"Error: Duplicate global declarations." << endl;
+            ReportError::DeclConflict(d, n);
             //Throw error and return
             //return;
         }
@@ -103,6 +103,7 @@ void StmtBlock::BuildScope(SymbolTable* s){
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return
+            ReportError::DeclConflict(this, n); //Not sure what to throw here so throwing this.
             return;
         }
         localScope->AddDecl(decls->Nth(i), overwrite);
