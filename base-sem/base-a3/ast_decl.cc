@@ -59,7 +59,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
     if(extends){
         extendedScope = new SymbolTable();
         while(current != NULL && !found){
-            Node* n = current->CheckDecl(extends);
+            Decl* n = current->CheckDecl(extends);
             if(n != NULL){
                 found = true;
                 extendedScope = current;
@@ -80,7 +80,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
         int count = implements->NumElements();
         while(current != NULL && count != 0 && !found){
             for(int i = 0; i < implements->NumElements(); i++){
-                Node* n = current->CheckDecl(implements->Nth(i));
+                Decl* n = current->CheckDecl(implements->Nth(i));
                 if(n != NULL){
                     count--;
                     found = true;
@@ -110,7 +110,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
 
     for(int i = 0; i < members->NumElements(); i++){
         Decl* curr = members->Nth(i);
-        Node* n = localScope->CheckDecl(curr);
+        Decl* n = localScope->CheckDecl(curr);
         bool overwrite = false;
         if(n != NULL){
             cout << "Error: Duplicate class declarations.";
@@ -140,7 +140,7 @@ void InterfaceDecl::BuildScope(SymbolTable* s){
 
     for (int i = 0; i < members->NumElements(); i++){
         Decl* d = members->Nth(i);
-        Node* n = scopeTable->CheckDecl(d->GetDeclName());
+        Decl* n = scopeTable->CheckDecl(d->GetDeclName());
         bool overwrite = false;
         if (n != NULL){
             //Throw error
@@ -174,7 +174,7 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
     formalsTable = new SymbolTable();
     formalsTable->SetParentTable(parentScope);
     for (int i = 0; i < formals->NumElements(); i++){
-        Node* n = formalsTable->CheckDecl(formals->Nth(i));
+        Decl* n = formalsTable->CheckDecl(formals->Nth(i));
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return
