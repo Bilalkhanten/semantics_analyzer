@@ -47,6 +47,7 @@ class NamedType : public Type
 
     const char *GetPrintNameForNode() { return "NamedType"; }
     const char* GetTypeName() { return id->GetName(); }
+    virtual Identifier* GetID() { return id; }
     void PrintChildren(int indentLevel);
     void PrintToStream(ostream& out) { out << id; }
 };

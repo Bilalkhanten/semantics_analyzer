@@ -79,33 +79,24 @@ void ClassDecl::BuildScope(SymbolTable* s){
         found = false;
         Decl* n;
         int count = implements->NumElements();
-        while(current != NULL && count != 0 && !found){
-            for(int i = 0; i < implements->NumElements(); i++){
+
+        for (int i = 0; i <implements->NumElements(); i++){
+            current = s;
+            while(current != NULL && !found){
                 n = current->CheckDecl(implements->Nth(i));
                 if(n != NULL){
-                    count--;
                     found = true;
+                    break;
                 }
+                current = current->GetParentTable();
             }
-            if(found == true && count == 0){
+            if(!found){
+                //Throw error, missing implementation of an interface
+                ReportError::IdentifierNotDeclared(implements->Nth(i)->GetID(), LookingForInterface);
+            }
+            else{
                 implementedScope->Append(current);
-                break;
             }
-            else if(found == true){
-                implementedScope->Append(current);
-                found = false;
-            }
-            else if(count == 0){
-                implementedScope->Append(current);
-                found = true;
-                break;
-            }
-            current = current->GetParentTable();
-        }
-        if(count != 0){
-            //Throw error, missing implementation of an interface
-            ReportError::InterfaceNotImplemented(n, extends);
-            return;
         }
     }
 
