@@ -1,0 +1,6 @@
+
+/* putting a string in params of main */
+
+int main() {
+    bool strng;
+}

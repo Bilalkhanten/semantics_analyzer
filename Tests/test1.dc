@@ -1,0 +1,6 @@
+
+/* Incorrect entry point */
+
+bool main() {
+
+}
