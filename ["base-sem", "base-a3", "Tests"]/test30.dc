@@ -1,6 +1,0 @@
-
-/* putting a string in params of main */
-
-int main("I shouldn\'t be here...") {
-
-}
