@@ -8,7 +8,7 @@
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
-    (id=n)->SetParent( this);
+    (id=n)->SetParent(this);
 }
 
 
@@ -78,8 +78,8 @@ void ClassDecl::BuildScope(SymbolTable* s){
             current = current->GetParentTable();
         }
         if(!found){
-            cout << "Error: Missing class to extend.";      //probably not needed but pending
-            return;
+            ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass)
+                return;
         }
     }
 
