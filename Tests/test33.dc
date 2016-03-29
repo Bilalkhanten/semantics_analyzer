@@ -1,7 +1,0 @@
-string x;
-
-/* incorrectly putting a hex value in a string */
-
-int main() {
-    x = 0x12345f;
-}

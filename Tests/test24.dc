@@ -1,8 +1,0 @@
-double x;
-
-/* Setting a hex value to a double */
-
-int main() {
-
-x = 0xeab3;
-}

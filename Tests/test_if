@@ -1,9 +1,0 @@
-int main(){
-	bool x;
-	x = true;
-	if(x) {
-		int y;
-		y = 10;
-		x = false;
-	}
-}
