@@ -1,0 +1,6 @@
+
+/* Incorrect main params */
+
+int main(int imWrong) {
+    imWrong = 4;
+}

@@ -1,0 +1,10 @@
+class Human {
+    int age;
+    string firstName;
+}
+
+/* class with 2 member vars */
+
+int main() {
+
+}

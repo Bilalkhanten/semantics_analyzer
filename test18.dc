@@ -1,8 +1,0 @@
-
-/* correct main method but with var that has same name as the main*/
-
-int main() {
-
-    bool main;
-    main = true;
-}

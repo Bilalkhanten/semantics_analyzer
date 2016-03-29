@@ -21,24 +21,27 @@ class FnDecl;
 class Expr;
 class IntConstant;
 class NamedType;
+class ClassDecl;
 
 void yyerror(const char *msg);
 
 class SymbolTable {
   private:
-    Hashtable<Node*>* symbolTable;
+    ClassDecl* decl;
+    Hashtable<Decl*>* symbolTable;
     SymbolTable* parentTable;
 
   public:
     SymbolTable();
     void SetParentTable(SymbolTable* parentTable) { this->parentTable = parentTable;}
     SymbolTable* GetParentTable() { return parentTable; }
-    Node* CheckDecl(Decl* d);
-    Node* CheckDecl(FnDecl* d);
-    Node* CheckDecl(NamedType* d);
-    Node* CheckDecl(const char* d);
+    Decl* CheckDecl(Decl* d);
+    Decl* CheckDecl(NamedType* d);
+    Decl* CheckDecl(const char* d);
+    void SetClassDecl(ClassDecl* d);
+    ClassDecl* GetClassDecl() { return decl; }
     void AddDecl(Decl* newEntry, bool overwrite);
-    Hashtable<Node*>* getHashTablePointer();
+    Hashtable<Decl*>* getHashTablePointer();
 };
 
 class Program : public Node
@@ -63,6 +66,7 @@ class Stmt : public Node
 
   public:
      Stmt() : Node() { }
+     virtual void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; }
      Stmt(yyltype loc) : Node(loc) {}
 };
 
@@ -75,6 +79,7 @@ class StmtBlock : public Stmt
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
     void BuildScope(SymbolTable* s);
+    void Check();
     const char *GetPrintNameForNode() { return "StmtBlock"; }
     void PrintChildren(int indentLevel);
 };
@@ -207,6 +212,7 @@ class SwitchStmt : public Stmt
     SwitchStmt() : expr(NULL), cases(NULL), def(NULL) {}
     SwitchStmt(Expr *expr, List<Case*> *cases, Default *def);
     const char *GetPrintNameForNode() { return "SwitchStmt"; }
+    void BuildScope(SymbolTable* s);
     void PrintChildren(int indentLevel);
 };
 

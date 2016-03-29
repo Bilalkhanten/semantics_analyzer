@@ -32,7 +32,7 @@ class Type : public Node
 
     const char *GetPrintNameForNode() { return "Type"; }
     void PrintChildren(int indentLevel);
-    char* GetTypeName() { return typeName; }
+    virtual const char* GetTypeName() { return typeName; }
     virtual void PrintToStream(ostream& out) { out << typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
 };
@@ -47,6 +47,7 @@ class NamedType : public Type
 
     const char *GetPrintNameForNode() { return "NamedType"; }
     const char* GetTypeName() { return id->GetName(); }
+    virtual Identifier* GetID() { return id; }
     void PrintChildren(int indentLevel);
     void PrintToStream(ostream& out) { out << id; }
 };
@@ -61,6 +62,7 @@ class ArrayType : public Type
 
     const char *GetPrintNameForNode() { return "ArrayType"; }
     void PrintChildren(int indentLevel);
+    const char* GetTypeName() { return elemType->GetTypeName(); }
     void PrintToStream(ostream& out) { out << elemType << "[]"; }
 };
 

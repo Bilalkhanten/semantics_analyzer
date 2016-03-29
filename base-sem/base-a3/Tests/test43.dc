@@ -1,0 +1,8 @@
+int x;
+/* doing an operation with a global variable */
+
+int main() {
+    x = 0;
+
+    x = x + 30;
+}

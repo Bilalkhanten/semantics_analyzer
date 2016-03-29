@@ -1,0 +1,12 @@
+int main(){
+	bool x;
+	x = true;
+	if(x){
+		int b;
+		b = 0;
+	}
+	else{
+		int b;
+		b = 0;
+	}
+}

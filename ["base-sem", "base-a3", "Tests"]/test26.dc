@@ -1,8 +1,0 @@
-string x;
-x = 'hello world';
-
-/* initializing a string with single quotes */
-
-int main() {
-
-}

@@ -9,10 +9,10 @@
 using namespace std;
 
 SymbolTable::SymbolTable(){
-    this->symbolTable = new Hashtable<Node*>();
+    this->symbolTable = new Hashtable<Decl*>();
 }
 
-Hashtable<Node*>* SymbolTable::getHashTablePointer(){
+Hashtable<Decl*>* SymbolTable::getHashTablePointer(){
     return this->symbolTable;
 }
 
@@ -20,30 +20,20 @@ void SymbolTable::AddDecl(Decl* newEntry, bool overwrite){
     symbolTable->Enter(newEntry->GetDeclName(), newEntry, overwrite);
 }
 
-Node* SymbolTable::CheckDecl(const char* t){
+Decl* SymbolTable::CheckDecl(const char* t){
     return symbolTable->Lookup(t);
 }
 
-Node* SymbolTable::CheckDecl(Decl* d){
+Decl* SymbolTable::CheckDecl(Decl* d){
     return symbolTable->Lookup(d->GetDeclName());
 }
 
-Node* SymbolTable::CheckDecl(FnDecl* d){
-    char result[100];
-    strcpy(result, d->GetDeclName());
-    List<VarDecl*>* formals = d->GetFormals();
-
-    for(int i = 0; i < formals->NumElements(); i++){
-       strcat(result, formals->Nth(i)->GetType()->GetTypeName());
-    }
-
-    const char* temp = result;
-
-    return symbolTable->Lookup(temp);
+Decl* SymbolTable::CheckDecl(NamedType* t){
+    return symbolTable->Lookup(t->GetTypeName());
 }
 
-Node* SymbolTable::CheckDecl(NamedType* t){
-    return symbolTable->Lookup(t->GetTypeName());
+void SymbolTable::SetClassDecl(ClassDecl* d){
+    this->decl = d;
 }
 
 Program::Program(List<Decl*> *d) {
@@ -78,15 +68,16 @@ void Program::BuildScope(){
     this->globalSymbolTable->SetParentTable(NULL);
     for (int i = 0; i < decls->NumElements(); i++){
         Decl* d = decls->Nth(i);
-        Node* n = this->globalSymbolTable->CheckDecl(d->GetDeclName());
+        Decl* n = this->globalSymbolTable->CheckDecl(d->GetDeclName());
         bool overwrite = false;
         if(n != NULL){
-            cout << endl <<"Error: Duplicate declarations." << endl;
+            ReportError::DeclConflict(d, n);
             //Throw error and return
-            return;
+            //return;
         }
         this->globalSymbolTable->AddDecl(d, overwrite);
     }
+
     for (int i = 0; i < decls->NumElements(); i++){
         decls->Nth(i)->BuildScope(this->globalSymbolTable);
     }
@@ -112,17 +103,23 @@ void StmtBlock::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
     for(int i = 0; i < decls->NumElements(); i++){
-        Node* n = localScope->CheckDecl(decls->Nth(i)->GetDeclName());
+        Decl* n = localScope->CheckDecl(decls->Nth(i)->GetDeclName());
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return
+            ReportError::DeclConflict(decls->Nth(i), n); //Not sure what to throw here so throwing this.
             return;
         }
         localScope->AddDecl(decls->Nth(i), overwrite);
     }
-
     for(int i = 0; i < stmts->NumElements(); i++){
         stmts->Nth(i)->BuildScope(localScope);
+    }
+}
+
+void StmtBlock::Check(){
+    for(int i = 0; i < stmts->NumElements(); i++){
+        stmts->Nth(i)->Check();
     }
 }
 
@@ -182,6 +179,13 @@ void IfStmt::PrintChildren(int indentLevel) {
 
 void IfStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
+    localScope->SetParentTable(s);
+
+    body->BuildScope(s);
+
+    if(elseBody){
+        elseBody->BuildScope(s);
+    }
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
@@ -233,6 +237,15 @@ SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {
     (cases=c)->SetParentAll(this);
     def = d;
     if (def) def->SetParent(this);
+}
+
+void SwitchStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
+    localScope->SetParentTable(s);
+
+    for (int i = 0; i < cases->NumElements(); i++){
+        cases->Nth(i)->BuildScope(localScope);
+    }
 }
 
 void SwitchStmt::PrintChildren(int indentLevel) {

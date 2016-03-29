@@ -1,7 +1,0 @@
-/* putting a bool after the main */
-
-int main() {
-
-}
-
-bool x;

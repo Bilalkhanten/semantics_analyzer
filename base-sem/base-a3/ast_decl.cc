@@ -22,6 +22,14 @@ void VarDecl::PrintChildren(int indentLevel) {
    id->Print(indentLevel+1);
 }
 
+void VarDecl::BuildScope(SymbolTable* s){
+    scopeTable = new SymbolTable();
+    types = new List<Type*>();
+
+    scopeTable = s;
+    types->Append(type);
+}
+
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
     // extends can be NULL, impl & mem may be empty lists but cannot be NULL
     Assert(n != NULL && imp != NULL && m != NULL);
@@ -42,12 +50,26 @@ void ClassDecl::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
 
-    SymbolTable* current = s;
+    SymbolTable* current = new SymbolTable();
+    current = s;
     bool found = false;
+    localScope->SetClassDecl(this);
+
+    for(int i = 0; i < members->NumElements(); i++){
+        Decl* curr = members->Nth(i);
+        Decl* n = localScope->CheckDecl(curr);
+        bool overwrite = false;
+        if(n != NULL){
+            ReportError::DeclConflict(curr, n);
+            return;
+        }
+        localScope->AddDecl(curr, overwrite);
+    }
 
     if(extends){
+        extendedScope = new SymbolTable();
         while(current != NULL && !found){
-            Node* n = current->CheckDecl(extends);
+            Decl* n = current->CheckDecl(extends);
             if(n != NULL){
                 found = true;
                 extendedScope = current;
@@ -56,53 +78,36 @@ void ClassDecl::BuildScope(SymbolTable* s){
             current = current->GetParentTable();
         }
         if(!found){
-            //Throw error, missing implementation of a class
+            cout << "Error: Missing class to extend.";      //probably not needed but pending
             return;
         }
     }
 
     if(implements){
+        implementedScope = new List<SymbolTable*>();
         current = s;
         found = false;
+        Decl* n;
         int count = implements->NumElements();
-        while(current != NULL && count != 0 && !found){
-            for(int i = 0; i < implements->NumElements(); i++){
-                Node* n = current->CheckDecl(implements->Nth(i));
-                if(n != NULL){
-                    count--;
-                    found = true;
-                }
-            }
-            if(found == true && count == 0){
-                implementedScope->Append(current);
-                break;
-            }
-            else if(found == true){
-                implementedScope->Append(current);
-                found = false;
-            }
-            else if(count == 0){
-                implementedScope->Append(current);
-                found = true;
-                break;
-            }
-            current = current->GetParentTable();
-        }
-        if(!found){
-            //Throw error, missing implementation of an interface
-            return;
-        }
-    }
 
-    for(int i = 0; i < members->NumElements(); i++){
-        Decl* curr = members->Nth(i);
-        Node* n = localScope->CheckDecl(curr);
-        bool overwrite = false;
-        if(n != NULL){
-           //Throw error
-            return;
+        for (int i = 0; i <implements->NumElements(); i++){
+            current = s;
+            while(current != NULL && !found){
+                n = current->CheckDecl(implements->Nth(i));
+                if(n != NULL){
+                    found = true;
+                    break;
+                }
+                current = current->GetParentTable();
+            }
+            if(!found){
+                //Throw error, missing implementation of an interface
+                ReportError::IdentifierNotDeclared(implements->Nth(i)->GetID(), LookingForInterface);
+            }
+            else{
+                implementedScope->Append(current);
+            }
         }
-        localScope->AddDecl(curr, overwrite);
     }
 
     for(int i = 0; i < members->NumElements(); i++){
@@ -118,6 +123,23 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 void InterfaceDecl::PrintChildren(int indentLevel) {
     id->Print(indentLevel+1);
     members->PrintAll(indentLevel+1);
+}
+
+void InterfaceDecl::BuildScope(SymbolTable* s){
+    scopeTable = new SymbolTable();
+    scopeTable->SetParentTable(s);
+
+    for (int i = 0; i < members->NumElements(); i++){
+        Decl* d = members->Nth(i);
+        Decl* n = scopeTable->CheckDecl(d->GetDeclName());
+        bool overwrite = false;
+        if (n != NULL){
+            //Throw error
+            ReportError::DeclConflict(d, n);
+            return;
+        }
+        scopeTable->AddDecl(d, overwrite);
+    }
 }
 
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
@@ -139,33 +161,30 @@ void FnDecl::PrintChildren(int indentLevel) {
     if (body) body->Print(indentLevel+1, "(body) ");
 }
 
-const char* FnDecl::GetDeclName(){
-    char result[100];
-    strcpy(result, id->GetName());
-
-    strcpy(result, returnType->GetTypeName());
-
-    for(int i = 0; i < formals->NumElements(); i++){
-       strcat(result, formals->Nth(i)->GetType()->GetTypeName());
-    }
-
-    const char* temp = result;
-    return temp;
-}
-
 void FnDecl::BuildScope(SymbolTable* parentScope){
     formalsTable = new SymbolTable();
+    types = new List<Type*>();
     formalsTable->SetParentTable(parentScope);
     for (int i = 0; i < formals->NumElements(); i++){
-        Node* n = formalsTable->CheckDecl(formals->Nth(i));
+        Decl* n = formalsTable->CheckDecl(formals->Nth(i));
+
         bool overwrite = false;
         if(n != NULL){
             //Throw error and return
-            cout << "Error: Duplicate variable declaration." << endl;
-            return;
+            ReportError::DeclConflict(this, n);
         }
+        types->Append(formals->Nth(i)->GetType());
         formalsTable->AddDecl(formals->Nth(i), overwrite);
     }
-    body->BuildScope(formalsTable);
+
+    if(body != NULL){
+        body->BuildScope(formalsTable);
+    }
+}
+
+void FnDecl::Check(){
+    if(body != NULL){
+        body->Check();
+    }
 }
 

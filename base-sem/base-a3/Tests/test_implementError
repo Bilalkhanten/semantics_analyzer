@@ -1,0 +1,8 @@
+interface Animal{
+}
+
+class Dog implements Animal{
+}
+
+class Dog1 implements Animal2{
+}

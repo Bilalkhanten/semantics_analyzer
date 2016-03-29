@@ -1,8 +1,0 @@
-double x;
-
-/* Setting a string to a double */
-
-int main() {
-
-x = "blahblahblah";
-}

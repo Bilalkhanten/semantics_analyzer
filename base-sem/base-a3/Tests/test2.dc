@@ -1,0 +1,8 @@
+bool x;
+
+/* Globally setting an integer to a boolean */
+
+int main() {
+
+    x = 455;
+}

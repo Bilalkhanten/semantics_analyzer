@@ -1,0 +1,7 @@
+double x;
+
+/* Setting a bool to a double */
+
+int main() {
+
+}
