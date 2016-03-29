@@ -144,7 +144,6 @@ void FieldAccess::Check(){
         }
 
         while(current->GetParentTable() != NULL && !found){
-            cout << "up" << endl;
             if(current->GetClassDecl() != NULL){
                 classT = current;
                 found = true;

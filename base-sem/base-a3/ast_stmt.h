@@ -113,6 +113,7 @@ class ForStmt : public LoopStmt
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
     const char *GetPrintNameForNode() { return "ForStmt"; }
     void BuildScope(SymbolTable* s);
+    void Check();
     void PrintChildren(int indentLevel);
 };
 
@@ -122,6 +123,7 @@ class WhileStmt : public LoopStmt
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
     const char *GetPrintNameForNode() { return "WhileStmt"; }
     void BuildScope(SymbolTable* s);
+    void Check();
     void PrintChildren(int indentLevel);
 };
 
@@ -135,6 +137,7 @@ class IfStmt : public ConditionalStmt
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
     const char *GetPrintNameForNode() { return "IfStmt"; }
     void BuildScope(SymbolTable* s);
+    void Check();
     void PrintChildren(int indentLevel);
 };
 
@@ -183,8 +186,9 @@ class SwitchLabel : public Stmt
   public:
     SwitchLabel(IntConstant *label, List<Stmt*> *stmts);
     SwitchLabel(List<Stmt*> *stmts);
-    void PrintChildren(int indentLevel);
     void BuildScope(SymbolTable* s);
+    void Check();
+    void PrintChildren(int indentLevel);
 };
 
 class Case : public SwitchLabel
@@ -213,6 +217,7 @@ class SwitchStmt : public Stmt
     SwitchStmt(Expr *expr, List<Case*> *cases, Default *def);
     const char *GetPrintNameForNode() { return "SwitchStmt"; }
     void BuildScope(SymbolTable* s);
+    void Check();
     void PrintChildren(int indentLevel);
 };
 
