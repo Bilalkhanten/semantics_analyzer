@@ -151,7 +151,19 @@ void ForStmt::PrintChildren(int indentLevel) {
 void ForStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+
+    init->BuildScope(s);
+    test->BuildScope(s);
+    step->BuildScope(s);
     body->BuildScope(s);
+}
+
+void ForStmt::Check(){
+    init->Check();
+    test->Check();
+    step->Check();
+
+    body->Check();
 }
 
 void WhileStmt::PrintChildren(int indentLevel) {
@@ -162,7 +174,14 @@ void WhileStmt::PrintChildren(int indentLevel) {
 void WhileStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+
+    test->BuildScope(s);
     body->BuildScope(s);
+}
+
+void WhileStmt::Check(){
+    test->Check();
+    body->Check();
 }
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
@@ -180,11 +199,20 @@ void IfStmt::PrintChildren(int indentLevel) {
 void IfStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
-
+    test->BuildScope(s);
     body->BuildScope(s);
 
     if(elseBody){
         elseBody->BuildScope(s);
+    }
+}
+
+void IfStmt::Check(){
+    test->Check();
+    body->Check();
+
+    if(elseBody){
+        elseBody->Check();
     }
 }
 
@@ -218,17 +246,23 @@ SwitchLabel::SwitchLabel(List<Stmt*> *s) {
     (stmts=s)->SetParentAll(this);
 }
 
-void SwitchLabel::PrintChildren(int indentLevel) {
-    if (label) label->Print(indentLevel+1);
-    stmts->PrintAll(indentLevel+1);
-}
-
 void SwitchLabel::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
     for(int i = 0; i < stmts->NumElements(); i++){
         stmts->Nth(i)->BuildScope(s);
     }
+}
+
+void SwitchLabel::Check(){
+    for(int i = 0; i < stmts->NumElements(); i++){
+        stmts->Nth(i)->Check();
+    }
+}
+
+void SwitchLabel::PrintChildren(int indentLevel) {
+    if (label) label->Print(indentLevel+1);
+    stmts->PrintAll(indentLevel+1);
 }
 
 SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {
@@ -245,6 +279,11 @@ void SwitchStmt::BuildScope(SymbolTable* s){
 
     for (int i = 0; i < cases->NumElements(); i++){
         cases->Nth(i)->BuildScope(localScope);
+    }
+}
+void SwitchStmt::Check(){
+    for(int i = 0; i < cases->NumElements(); i++){
+        cases->Nth(i)->Check();
     }
 }
 
