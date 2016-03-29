@@ -24,7 +24,7 @@ void ReportError::UnderlineErrorInLine(const char *line, yyltype *pos) {
         cerr << (i >= pos->first_column ? '^' : ' ');
     cerr << endl;
 }
- 
+
 void ReportError::OutputError(yyltype *loc, string msg) {
     numErrors++;
     fflush(stdout); // make sure any buffered text has been output
@@ -39,7 +39,7 @@ void ReportError::OutputError(yyltype *loc, string msg) {
 void ReportError::Formatted(yyltype *loc, const char *format, ...) {
     va_list args;
     char errbuf[2048];
-    
+
     va_start(args, format);
     vsprintf(errbuf,format, args);
     va_end(args);
@@ -70,11 +70,11 @@ void ReportError::UnrecogChar(yyltype *loc, char ch) {
 
 void ReportError::DeclConflict(Decl *decl, Decl *prevDecl) {
     ostringstream s;
-    s << "Declaration of '" << decl << "' here conflicts with declaration on line " 
+    s << "Declaration of '" << decl << "' here conflicts with declaration on line "
       << prevDecl->GetLocation()->first_line;
     OutputError(decl->GetLocation(), s.str());
 }
-  
+
 void ReportError::OverrideMismatch(Decl *fnDecl) {
     ostringstream s;
     s << "Method '" << fnDecl << "' must match inherited type signature";
@@ -100,7 +100,7 @@ void ReportError::IncompatibleOperands(Operator *op, Type *lhs, Type *rhs) {
     s << "Incompatible operands: " << lhs << " " << op << " " << rhs;
     OutputError(op->GetLocation(), s.str());
 }
-     
+
 void ReportError::IncompatibleOperand(Operator *op, Type *rhs) {
     ostringstream s;
     s << "Incompatible operand: " << op << " " << rhs;
@@ -125,7 +125,7 @@ void ReportError::NewArraySizeNotInteger(Expr *sizeExpr) {
 
 void ReportError::NumArgsMismatch(Identifier *fnIdent, int numExpected, int numGiven) {
     ostringstream s;
-    s << "Function '"<< fnIdent << "' expects " << numExpected << " argument" << (numExpected==1?"":"s") 
+    s << "Function '"<< fnIdent << "' expects " << numExpected << " argument" << (numExpected==1?"":"s")
       << " but " << numGiven << " given";
     OutputError(fnIdent->GetLocation(), s.str());
 }
@@ -147,7 +147,7 @@ void ReportError::FieldNotFoundInBase(Identifier *field, Type *base) {
     s << base << " has no such field '" << field <<"'";
     OutputError(field->GetLocation(), s.str());
 }
-     
+
 void ReportError::InaccessibleField(Identifier *field, Type *base) {
     ostringstream s;
     s  << base << " field '" << field << "' only accessible within class scope";
@@ -165,10 +165,14 @@ void ReportError::TestNotBoolean(Expr *expr) {
     OutputError(expr->GetLocation(), "Test expression must have boolean type");
 }
 
+void ReportError::SwitchStmtNotInt(Expr *expr) {
+    OutputError(expr->GetLocation(), "Switch statement expression must have an integer type.");
+}
+
 void ReportError::BreakOutsideLoop(BreakStmt *bStmt) {
     OutputError(bStmt->GetLocation(), "break is only allowed inside a loop");
 }
-  
+
 /**
  * Function: yyerror()
  * -------------------

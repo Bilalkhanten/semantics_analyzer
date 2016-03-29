@@ -1,0 +1,41 @@
+int x;
+int i;
+bool y;
+int t;
+bool z;
+
+class Dog{
+	
+	void Dog(){
+		x = t;
+		y = z;
+	}
+
+}
+
+int main(){
+	if(y == z){
+		int x;
+		int temp;
+
+		x = t;
+		
+		if(x == t){
+			y = z;
+		}
+	}
+	
+	while(x == t){
+		x = x - 1;
+		if(x == 3){
+			t = t + 1;
+		}
+		else{
+			z = false;
+		}
+	}
+
+	for( i = 0; i < x; i++){
+		x--;
+	}
+}

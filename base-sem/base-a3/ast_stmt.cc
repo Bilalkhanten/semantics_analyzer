@@ -180,6 +180,10 @@ void WhileStmt::BuildScope(SymbolTable* s){
 }
 
 void WhileStmt::Check(){
+    if(test->GetType() != Type::boolType){
+        ReportError::TestNotBoolean(test);
+    }
+
     test->Check();
     body->Check();
 }
@@ -210,6 +214,10 @@ void IfStmt::BuildScope(SymbolTable* s){
 void IfStmt::Check(){
     test->Check();
     body->Check();
+
+    if(test->GetType() != Type::boolType){
+        ReportError::TestNotBoolean(test);
+    }
 
     if(elseBody){
         elseBody->Check();
@@ -276,12 +284,20 @@ SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {
 void SwitchStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+    expr->BuildScope(s);
+    def->BuildScope(s);
 
     for (int i = 0; i < cases->NumElements(); i++){
         cases->Nth(i)->BuildScope(localScope);
     }
 }
 void SwitchStmt::Check(){
+    if(expr->GetType() != Type::intType){
+        ReportError::SwitchStmtNotInt(expr);
+    }
+    expr->Check();
+    def->Check();
+
     for(int i = 0; i < cases->NumElements(); i++){
         cases->Nth(i)->Check();
     }
