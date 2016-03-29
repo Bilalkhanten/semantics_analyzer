@@ -8,7 +8,7 @@
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
-    (id=n)->SetParent(this);
+    (id=n)->SetParent( this);
 }
 
 
