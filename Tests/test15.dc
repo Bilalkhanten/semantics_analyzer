@@ -1,8 +1,0 @@
-int x;
-
-/* Incorrectly globally setting a string to an int */
-
-int main() {
-
-x = "String!";
-}

@@ -1,8 +1,0 @@
-string x;
-
-/* changing a global string in the main method */
-
-int main() {
-    x = "I want to be changed!";
-    x = "I am changed now :)";
-}

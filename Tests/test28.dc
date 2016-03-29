@@ -1,7 +1,0 @@
-string x;
-
-/* putting int in string */
-
-int main() {
-
-}

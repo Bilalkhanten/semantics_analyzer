@@ -1,7 +1,0 @@
-double x;
-
-/* incorrectly initializing a double */
-
-int main() {
-    x = 10.0;
-}
