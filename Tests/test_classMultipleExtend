@@ -1,0 +1,8 @@
+class Dog{
+}
+
+class Dog2 extends Dog{
+}
+
+class Dog3 extends Dog1{
+}

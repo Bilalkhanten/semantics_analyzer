@@ -1,0 +1,6 @@
+
+/* Incorrect params in main */
+
+int main (int x) {
+
+}
