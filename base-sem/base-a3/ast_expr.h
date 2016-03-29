@@ -24,6 +24,7 @@ class Expr : public Stmt
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
     void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
+    virtual Type* GetType() { return NULL;}
 };
 
 class ExprError : public Expr
