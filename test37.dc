@@ -1,0 +1,11 @@
+class Human {
+    int age;
+    string name;
+    double height;
+}
+
+/* class with 3 member vars */
+
+int main() {
+
+}

@@ -1,0 +1,7 @@
+bool x;
+
+/* Globally setting a correct boolean without initialization */
+
+int main() {
+
+}

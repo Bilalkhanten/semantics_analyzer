@@ -1,0 +1,8 @@
+int x;
+x = 40.9;
+
+/* Incorrectly globally setting an int to a double */
+
+int main() {
+
+}

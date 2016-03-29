@@ -1,0 +1,8 @@
+double x;
+x = "blahblahblah";
+
+/* Setting a string to a double */
+
+int main() {
+
+}

@@ -1,0 +1,8 @@
+int x;
+x = 0xf5ff;
+
+/* Correct global creation of an integer and setting it to a correct hex value */
+
+int main() {
+
+}

@@ -1,0 +1,8 @@
+int x;
+x = 1000000000000000000;
+
+/* way too large integer */
+
+int main() {
+
+}

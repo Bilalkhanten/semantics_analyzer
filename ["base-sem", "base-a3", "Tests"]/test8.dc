@@ -1,0 +1,8 @@
+int x;
+x = 3;
+
+/* Correct global creation of an integer and setting it to a correct value */
+
+int main() {
+
+}

@@ -1,0 +1,7 @@
+double x = 10.0;
+
+/* incorrectly initializing a double */
+
+int main() {
+
+}
