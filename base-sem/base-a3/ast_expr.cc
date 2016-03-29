@@ -196,7 +196,7 @@ void FieldAccess::Check(){
     }
 }
 
-LogicalExpr::Check() {
+void LogicalExpr::Check() {
     Type *t = Type::boolType;
 
     if (left != NULL)
@@ -207,8 +207,6 @@ LogicalExpr::Check() {
     Type *t_Left;
     if (left != NULL)
         t_Left = left->GetType();   //Need to make a GetType() Function
-    else
-        t_left = NULL;
 
     Type *t_Right = right->GetType();
 
