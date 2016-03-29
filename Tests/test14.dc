@@ -1,7 +1,0 @@
-int x;
-
-/* Incorrectly globally setting an int to a double */
-
-int main() {
-x = 40.9;
-}
