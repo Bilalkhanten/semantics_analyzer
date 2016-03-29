@@ -1,8 +1,0 @@
-string x;
-
-
-/* correctly initializing a string */
-
-int main() {
-
-}

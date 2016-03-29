@@ -1,9 +1,0 @@
-class Human {
-    int age;
-}
-
-/* class with 1 member var */
-
-int main() {
-
-}
