@@ -196,6 +196,37 @@ void FieldAccess::Check(){
     }
 }
 
+LogicalExpr::Check() {
+    Type *t = Type::boolType;
+
+    if (left != NULL)
+        left->Check();
+
+    right->Check();
+
+    Type *t_Left;
+    if (left != NULL)
+        t_Left = left->GetType();   //Need to make a GetType() Function
+    else
+        t_left = NULL;
+
+    Type *t_Right = right->GetType();
+
+    if (left != NULL) {
+        if (t_Right->IsEquivalentTo(t) && t_Left->IsEquivalentTo(t))
+            return;
+        else
+            ReportError::IncompatibleOperands(op, left, right);
+    }
+
+    else {
+        if (t_Right->IsEquivalentTo(t))
+            return;
+        else
+            ReportError::IncompatibleOperand(op, right);
+    }
+}
+
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
     base = b;
