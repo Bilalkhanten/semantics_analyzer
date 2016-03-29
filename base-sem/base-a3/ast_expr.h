@@ -20,11 +20,14 @@ class Type; // for NewArray
 
 class Expr : public Stmt
 {
+protected:
+    Type *retType;
+
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
     void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
-    virtual Type* GetType() { return NULL;}
+    virtual Type* GetType() { return retType;}
 };
 
 class ExprError : public Expr
