@@ -28,6 +28,8 @@ protected:
     Expr() : Stmt() { retType = NULL;}
     void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
     Type* GetType() {return retType;}
+
+    virtual Identifier* GetID() {return NULL;}
 };
 
 class ExprError : public Expr

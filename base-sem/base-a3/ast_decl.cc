@@ -78,7 +78,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
             current = current->GetParentTable();
         }
         if(!found){
-            ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass)
+            ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass);
                 return;
         }
     }
