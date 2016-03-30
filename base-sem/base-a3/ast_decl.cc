@@ -74,12 +74,15 @@ void ClassDecl::BuildScope(SymbolTable* s){
                 extendedScope = n;
                 if(n->GetScope() == NULL){
                     cout << "Not a class: " << n->GetDeclName() << endl;
+                    ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass);
                     extends = NULL;
                 }
                 else if (n->GetScope()->GetName() == NULL){
                     cout << "Not a class: " << n->GetDeclName() << endl;
+                    ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass);
                     extends = NULL;
                 }
+
                 break;
             }
             current = current->GetParentTable();
@@ -87,7 +90,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
         if(!found){
             ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass);
             extends = NULL;
-            return;
+            //return;
         }
     }
 
@@ -131,22 +134,31 @@ void ClassDecl::Check(){
         for(int i = 0; i < implementedScope->NumElements(); i++){
             Decl* interfaceD = implementedScope->Nth(i);
             List<Decl*>* listD = interfaceD->GetMembers();
+            List<VarDecl*>* classVars = new List<VarDecl*>();
+            List<VarDecl*>* interVars = new List<VarDecl*>();
 
             for(int i = 0; i < listD->NumElements(); i++){
                 Decl* declInt = listD->Nth(i);
                 Decl* classDecl = localScope->CheckDecl(declInt);
                 if(classDecl != NULL){
-                    List<VarDecl*>* classVars = classDecl->GetFormals();
-                    List<VarDecl*>* interVars = declInt->GetFormals();
+                    classVars = classDecl->GetFormals();
+                    interVars = declInt->GetFormals();
+
+                    if(classVars->NumElements() != interVars->NumElements()){
+                        cout << "class: " <<  classVars->Nth(i) << endl;
+                        ReportError::InterfaceNotImplemented(this, implements->Nth(i));
+                        continue;
+                    }
 
                     for(int i = 0; i < classVars->NumElements(); i++){
                         if(classVars->Nth(i)->GetType() != interVars->Nth(i)->GetType()){
-                            ReportError::InterfaceNotImplemented(classVars->Nth(i), implements->Nth(i));
+                            ReportError::InterfaceNotImplemented(this, implements->Nth(i));
+                            break;
                         }
                     }
                 }
                 else{
-                    ReportError::InterfaceNotImplemented(declInt, implements->Nth(i));
+                    ReportError::InterfaceNotImplemented(this, implements->Nth(i));
                 }
             }
         }
@@ -155,28 +167,69 @@ void ClassDecl::Check(){
     if(extends){
         SymbolTable* parentT = localScope->GetParentTable();
         Decl* extendC = parentT->CheckDecl(extends);
+        bool found = false;
 
         for(int i = 0; i < members->NumElements(); i++){
-            Decl* member = members->Nth(i);
-            Decl* memberEx = extendC->GetScope()->CheckDecl(member);
-            if(memberEx != NULL){
-                List<VarDecl*>* vars = member->GetFormals();
-                List<VarDecl*>* varsEx = memberEx->GetFormals();
-                if(vars->NumElements() != varsEx->NumElements()){
-                    ReportError::OverrideMismatch(member);
-                }
+            found = CheckOverriding(i, extendC, parentT); //Add to get a recursive call to extend classes
+            if(!found){
+                //Check next scope
+                Decl* extendNext = extendC->GetExtendScope();
+                if(extendNext != NULL){
 
-                for(int i = 0; i < vars->NumElements(); i++){
-                    if(vars->Nth(i)->GetType() != varsEx->Nth(i)->GetType()){
-                        ReportError::OverrideMismatch(member);
-                    }
                 }
+            }
+        }
+        if(!found){
+            Decl* extendNext = extendC->GetExtendScope();
+            if(extendNext != NULL){
+
             }
         }
     }
 
     for(int i = 0; i < members->NumElements(); i++){
         members->Nth(i)->Check();
+    }
+}
+
+bool ClassDecl::CheckOverriding(int i, Decl* extendC, SymbolTable* parentT){
+    //extendC = parentT->CheckDecl(extends);
+    bool found = false;
+
+    Decl* member = members->Nth(i);
+    Decl* memberEx = extendC->GetScope()->CheckDecl(member);
+    if(memberEx != NULL){
+        found = true;
+        Type* t = member->GetType();
+        Type* t1 = memberEx->GetType();
+        if(t->GetTypeName() != t1->GetTypeName()){
+            ReportError::OverrideMismatch(member);
+            return false;
+        }
+        List<VarDecl*>* vars = member->GetFormals();
+        List<VarDecl*>* varsEx = memberEx->GetFormals();
+        if(vars->NumElements() != varsEx->NumElements()){
+            ReportError::OverrideMismatch(member);
+            return false;
+        }
+
+        for(int i = 0; i < vars->NumElements(); i++){
+            if(vars->Nth(i)->GetType() != varsEx->Nth(i)->GetType()){
+                ReportError::OverrideMismatch(member);
+                found = false;
+                return found;
+            }
+        }
+        return found;
+    }
+    else{
+        Decl* extendNext = extendC->GetExtendScope();
+        if(extendNext != NULL){
+            return CheckOverriding(i, extendNext, parentT);
+        }
+        else{
+            return false;
+        }
     }
 }
 

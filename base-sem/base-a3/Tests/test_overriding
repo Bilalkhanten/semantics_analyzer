@@ -1,0 +1,15 @@
+class Dog{
+	void bark(){
+		int x;
+		x = 0;
+		//Print(x);
+	}	
+}
+
+class Poodle extends Dog{
+	void bark(){
+		
+	}
+}
+
+int main() {}

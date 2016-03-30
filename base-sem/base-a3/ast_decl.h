@@ -34,6 +34,8 @@ class Decl : public Node
   public:
     Decl() : id(NULL) {}
     Decl(Identifier *name);
+    virtual Decl* GetExtendScope() { return NULL; }
+    virtual List<Decl*>* GetImplementScope() { return NULL; }
     virtual bool isInterface() { return false; }
     virtual List<VarDecl*>* GetFormals() { return NULL; }
     virtual List<Decl*>* GetMembers() { return NULL; }
@@ -79,6 +81,7 @@ class ClassDecl : public Decl
     SymbolTable* GetScope() { return this->localScope; }
     Decl* GetExtendScope() { return extendedScope; }
     List<Decl*>* GetImplementScope() { return implementedScope; }
+    bool CheckOverriding(int i, Decl* extendC, SymbolTable* parentT);
     const char *GetPrintNameForNode() { return "ClassDecl"; }
     void PrintChildren(int indentLevel);
 };
