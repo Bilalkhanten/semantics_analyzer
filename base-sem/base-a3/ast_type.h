@@ -29,6 +29,7 @@ class Type : public Node
     Type(const char *str);
 
     virtual bool IsEquivalentTo(Type *other) { return this == other; }
+    virtual bool IsCompatible(Type *other) {}
 
     const char *GetPrintNameForNode() { return "Type"; }
     void PrintChildren(int indentLevel);

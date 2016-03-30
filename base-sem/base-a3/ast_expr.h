@@ -22,12 +22,14 @@ class Expr : public Stmt
 {
 protected:
     Type *retType;
+    Identifier *id;
 
   public:
-    Expr(yyltype loc) : Stmt(loc) {}
-    Expr() : Stmt() {}
+    Expr(yyltype loc) : Stmt(loc) { retType = NULL;}
+    Expr() : Stmt() { retType = NULL;}
     void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
-    virtual Type* GetType() { retType = NULL; return retType;}
+    virtual Identifier* GetID() {return NULL;}
+    Type* GetType() {return retType;}
 };
 
 class ExprError : public Expr

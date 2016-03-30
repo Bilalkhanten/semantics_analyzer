@@ -214,14 +214,64 @@ void LogicalExpr::Check() {
         if (t_Right->IsEquivalentTo(t) && t_Left->IsEquivalentTo(t))
             return;
         else
-            ReportError::IncompatibleOperands(op, left, right);
+            ReportError::IncompatibleOperands(op, t_Left, t_Right);
     }
 
     else {
         if (t_Right->IsEquivalentTo(t))
             return;
         else
-            ReportError::IncompatibleOperand(op, right);
+            ReportError::IncompatibleOperand(op, t_Right);
+    }
+}
+
+void EqualityExpr::Check() {
+    left->Check();
+    right->Check();
+
+    Type *t_Left = left->GetType();
+    Type *t_Right = right->GetType();
+
+    if (t_Right == Type::nullType && t_Left != Type::nullType) {
+
+        NamedType t_Left_Named = dynamic_cast<NamedType *>(t_Left);
+        if (t_Left_Named == NULL)
+            ReportError::IncompatibleOperands(op, t_Left, t_Right);
+
+        retType = Type::boolType;
+        return;
+    }
+
+    if (t_Left == NULL) {
+
+        Identifier *left_Id = left->GetID();
+
+        Decl *d_Left = localScope.CheckDecl(left_Id->GetName());
+
+        if (d_Left == NULL) {
+            retType = Type::errorType;
+            ReportError::IdentifierNotDeclared(left_id, LookingForVariable)
+        }
+        else {
+            VarDecl *var = dynamic_cast<VarDecl *>(d_Left);
+            t_Left = var->GetType();
+        }
+    }
+
+    if (t_Left == Type::voidType || t_Right == Type::voidType) {
+        ReportError::IncompatibleOperands(op, t_Left, t_Rright);
+        retType = Type::errorType;
+    }
+    else if (t_Left->IsEquivalentTo(t_Right))
+        retType = Type::boolType;
+    else {
+
+        if (t_Left->IsCompatible(t_Right))
+            retType = Type::boolType;
+        else {
+            ReportError::IncompatibleOperands(op, t_Left, t_Right);
+            retType = Type::errorType;
+        }
     }
 }
 
