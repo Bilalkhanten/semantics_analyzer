@@ -49,7 +49,7 @@ void ClassDecl::PrintChildren(int indentLevel) {
 void ClassDecl::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
-
+    localScope->SetName(id->GetName());
     SymbolTable* current = new SymbolTable();
     current = s;
     bool found = false;
@@ -67,24 +67,32 @@ void ClassDecl::BuildScope(SymbolTable* s){
     }
 
     if(extends){
-        extendedScope = new SymbolTable();
         while(current != NULL && !found){
             Decl* n = current->CheckDecl(extends);
             if(n != NULL){
                 found = true;
-                extendedScope = current;
+                extendedScope = n;
+                if(n->GetScope() == NULL){
+                    cout << "Not a class: " << n->GetDeclName() << endl;
+                    extends = NULL;
+                }
+                else if (n->GetScope()->GetName() == NULL){
+                    cout << "Not a class: " << n->GetDeclName() << endl;
+                    extends = NULL;
+                }
                 break;
             }
             current = current->GetParentTable();
         }
         if(!found){
             ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass);
+            extends = NULL;
             return;
         }
     }
 
     if(implements){
-        implementedScope = new List<SymbolTable*>();
+        implementedScope = new List<Decl*>();
         current = s;
         found = false;
         Decl* n;
@@ -96,6 +104,9 @@ void ClassDecl::BuildScope(SymbolTable* s){
                 n = current->CheckDecl(implements->Nth(i));
                 if(n != NULL){
                     found = true;
+                    if(!(n->isInterface())){
+                        cout << "Not an interface: " << n->GetDeclName() << endl;
+                    }
                     break;
                 }
                 current = current->GetParentTable();
@@ -105,7 +116,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
                 ReportError::IdentifierNotDeclared(implements->Nth(i)->GetID(), LookingForInterface);
             }
             else{
-                implementedScope->Append(current);
+                implementedScope->Append(n);
             }
         }
     }
@@ -116,6 +127,54 @@ void ClassDecl::BuildScope(SymbolTable* s){
 }
 
 void ClassDecl::Check(){
+    if(implements){
+        for(int i = 0; i < implementedScope->NumElements(); i++){
+            Decl* interfaceD = implementedScope->Nth(i);
+            List<Decl*>* listD = interfaceD->GetMembers();
+
+            for(int i = 0; i < listD->NumElements(); i++){
+                Decl* declInt = listD->Nth(i);
+                Decl* classDecl = localScope->CheckDecl(declInt);
+                if(classDecl != NULL){
+                    List<VarDecl*>* classVars = classDecl->GetFormals();
+                    List<VarDecl*>* interVars = declInt->GetFormals();
+
+                    for(int i = 0; i < classVars->NumElements(); i++){
+                        if(classVars->Nth(i)->GetType() != interVars->Nth(i)->GetType()){
+                            ReportError::InterfaceNotImplemented(classVars->Nth(i), implements->Nth(i));
+                        }
+                    }
+                }
+                else{
+                    ReportError::InterfaceNotImplemented(declInt, implements->Nth(i));
+                }
+            }
+        }
+    }
+
+    if(extends){
+        SymbolTable* parentT = localScope->GetParentTable();
+        Decl* extendC = parentT->CheckDecl(extends);
+
+        for(int i = 0; i < members->NumElements(); i++){
+            Decl* member = members->Nth(i);
+            Decl* memberEx = extendC->GetScope()->CheckDecl(member);
+            if(memberEx != NULL){
+                List<VarDecl*>* vars = member->GetFormals();
+                List<VarDecl*>* varsEx = memberEx->GetFormals();
+                if(vars->NumElements() != varsEx->NumElements()){
+                    ReportError::OverrideMismatch(member);
+                }
+
+                for(int i = 0; i < vars->NumElements(); i++){
+                    if(vars->Nth(i)->GetType() != varsEx->Nth(i)->GetType()){
+                        ReportError::OverrideMismatch(member);
+                    }
+                }
+            }
+        }
+    }
+
     for(int i = 0; i < members->NumElements(); i++){
         members->Nth(i)->Check();
     }

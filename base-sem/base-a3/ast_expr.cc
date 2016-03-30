@@ -167,17 +167,17 @@ void FieldAccess::Check(){
         ClassDecl* c = classT->GetClassDecl();
 
         if(n == NULL){
-            SymbolTable* extends = c->GetExtendScope();
-            Decl* temp = extends->CheckDecl(field->GetName());
+            Decl* extends = c->GetExtendScope();
+            Decl* temp = extends->GetScope()->CheckDecl(field->GetName());
 
             if(temp != NULL){
                 return;
             }
 
-            List<SymbolTable*>* implements = c->GetImplementScope();
+            List<Decl*>* implements = c->GetImplementScope();
             for (int i = 0; i < implements->NumElements(); i++){
-                SymbolTable* implement = implements->Nth(i);
-                temp = implement->CheckDecl(field->GetName());
+                Decl* implement = implements->Nth(i);
+                temp = implement->GetScope()->CheckDecl(field->GetName());
                 if(temp != NULL){
                     return;
                 }

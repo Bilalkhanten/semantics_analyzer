@@ -27,6 +27,7 @@ void yyerror(const char *msg);
 
 class SymbolTable {
   private:
+    const char* name;
     ClassDecl* decl;
     Hashtable<Decl*>* symbolTable;
     SymbolTable* parentTable;
@@ -40,6 +41,8 @@ class SymbolTable {
     Decl* CheckDecl(const char* d);
     void SetClassDecl(ClassDecl* d);
     ClassDecl* GetClassDecl() { return decl; }
+    void SetName(const char* id) { this->name = id; }
+    const char* GetName() { return name; }
     void AddDecl(Decl* newEntry, bool overwrite);
     Hashtable<Decl*>* getHashTablePointer();
 };
@@ -163,6 +166,8 @@ class ReturnStmt : public Stmt
   public:
     ReturnStmt(yyltype loc, Expr *expr);
     const char *GetPrintNameForNode() { return "ReturnStmt"; }
+    void BuildScope(SymbolTable* s);
+    void Check();
     void PrintChildren(int indentLevel);
 };
 
@@ -174,6 +179,8 @@ class PrintStmt : public Stmt
   public:
     PrintStmt(List<Expr*> *arguments);
     const char *GetPrintNameForNode() { return "PrintStmt"; }
+    void BuildScope(SymbolTable* s);
+    void Check();
     void PrintChildren(int indentLevel);
 };
 

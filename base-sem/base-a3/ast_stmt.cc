@@ -229,6 +229,18 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     (expr=e)->SetParent(this);
 }
 
+void ReturnStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
+    localScope = s;
+
+    expr->BuildScope(s);
+}
+
+void ReturnStmt::Check(){
+    expr->Check();
+}
+
+
 void ReturnStmt::PrintChildren(int indentLevel) {
     expr->Print(indentLevel+1);
 }
@@ -236,6 +248,24 @@ void ReturnStmt::PrintChildren(int indentLevel) {
 PrintStmt::PrintStmt(List<Expr*> *a) {
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
+}
+
+void PrintStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
+    localScope = s;
+
+    for(int i = 0; i < args->NumElements(); i++){
+        args->Nth(i)->BuildScope(s);
+    }
+}
+
+void PrintStmt::Check(){
+    for(int i = 0; i < args->NumElements(); i++){
+        Type* t = args->Nth(i)->GetType();
+        if(t != Type::intType && t != Type::boolType && t != Type::stringType){
+            ReportError::PrintArgMismatch(args->Nth(i), i, t);
+        }
+    }
 }
 
 void PrintStmt::PrintChildren(int indentLevel) {

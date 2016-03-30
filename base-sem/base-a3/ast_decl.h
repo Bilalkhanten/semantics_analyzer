@@ -34,6 +34,10 @@ class Decl : public Node
   public:
     Decl() : id(NULL) {}
     Decl(Identifier *name);
+    virtual bool isInterface() { return false; }
+    virtual List<VarDecl*>* GetFormals() { return NULL; }
+    virtual List<Decl*>* GetMembers() { return NULL; }
+    virtual SymbolTable* GetScope() { return NULL; }
     virtual Identifier* GetID() { return id; }
     virtual List<Type*>* GetTypes() { return types; }
     virtual Type* GetType() { return NULL; }
@@ -61,8 +65,8 @@ class ClassDecl : public Decl
     List<Decl*> *members;
     NamedType *extends;
     List<NamedType*> *implements;
-    SymbolTable* extendedScope;
-    List<SymbolTable*>* implementedScope;
+    Decl* extendedScope;
+    List<Decl*>* implementedScope;
     SymbolTable* localScope;
 
   public:
@@ -71,8 +75,10 @@ class ClassDecl : public Decl
               List<NamedType*> *implements, List<Decl*> *members);
     void BuildScope(SymbolTable* s);
     void Check();
-    SymbolTable* GetExtendScope() { return extendedScope; }
-    List<SymbolTable*>* GetImplementScope() { return implementedScope; }
+    List<Decl*>* GetMembers() { return members; }
+    SymbolTable* GetScope() { return this->localScope; }
+    Decl* GetExtendScope() { return extendedScope; }
+    List<Decl*>* GetImplementScope() { return implementedScope; }
     const char *GetPrintNameForNode() { return "ClassDecl"; }
     void PrintChildren(int indentLevel);
 };
@@ -94,6 +100,8 @@ class InterfaceDecl : public Decl
     const char *GetPrintNameForNode() { return "InterfaceDecl"; }
     void BuildScope(SymbolTable* s);
     void Check();
+    bool isInterface() { return true; }
+    List<Decl*>* GetMembers() { return members; }
     void PrintChildren(int indentLevel);
 };
 
