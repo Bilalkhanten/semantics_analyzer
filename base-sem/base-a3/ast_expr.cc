@@ -244,7 +244,7 @@ void EqualityExpr::Check() {
 
     if (t_Left == NULL) {
 
-        Identifier *left_Id = left->GetID();
+        Identifier *left_Id = localScope->CheckDecl(left->GetType());
 
         Decl *d_Left = localScope.CheckDecl(left_Id->GetName());
 
@@ -265,13 +265,13 @@ void EqualityExpr::Check() {
     else if (t_Left->IsEquivalentTo(t_Right))
         retType = Type::boolType;
     else {
-
+/*
         if (t_Left->IsCompatible(t_Right))
             retType = Type::boolType;
         else {
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
             retType = Type::errorType;
-        }
+        } */
     }
 }
 
