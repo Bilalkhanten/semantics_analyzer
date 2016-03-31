@@ -143,11 +143,19 @@ void FieldAccess::Check(){
             return;
         }
 
-        while(current->GetParentTable() != NULL){
-            classT = current;
+        while(current->GetParentTable() != NULL && !found){
+            if(current->GetClassDecl() != NULL){
+                classT = current;
+                found = true;
+                break;
+            }
             current = current->GetParentTable();
             parentT = current;
         }
+        if(!found){
+            cout << "Error: Not within class scope.";
+        }
+        found = false;
 
         if(current->GetClassDecl() == NULL){
             This* t = new This(*location);
@@ -159,17 +167,17 @@ void FieldAccess::Check(){
         ClassDecl* c = classT->GetClassDecl();
 
         if(n == NULL){
-            SymbolTable* extends = c->GetExtendScope();
-            Decl* temp = extends->CheckDecl(field->GetName());
+            Decl* extends = c->GetExtendScope();
+            Decl* temp = extends->GetScope()->CheckDecl(field->GetName());
 
             if(temp != NULL){
                 return;
             }
 
-            List<SymbolTable*>* implements = c->GetImplementScope();
+            List<Decl*>* implements = c->GetImplementScope();
             for (int i = 0; i < implements->NumElements(); i++){
-                SymbolTable* implement = implements->Nth(i);
-                temp = implement->CheckDecl(field->GetName());
+                Decl* implement = implements->Nth(i);
+                temp = implement->GetScope()->CheckDecl(field->GetName());
                 if(temp != NULL){
                     return;
                 }
@@ -234,7 +242,7 @@ void EqualityExpr::Check() {
 
     if (t_Right == Type::nullType && t_Left != Type::nullType) {
 
-        NamedType t_Left_Named = dynamic_cast<NamedType *>(t_Left);
+        NamedType* t_Left_Named = dynamic_cast<NamedType *>(t_Left);
         if (t_Left_Named == NULL)
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
 
@@ -244,13 +252,13 @@ void EqualityExpr::Check() {
 
     if (t_Left == NULL) {
 
-        Identifier *left_Id = localScope->CheckDecl(left->GetType());
+        Identifier *left_Id = left->GetID();
 
-        Decl *d_Left = localScope.CheckDecl(left_Id->GetName());
+        Decl *d_Left = localScope->CheckDecl(left_Id->GetName());
 
         if (d_Left == NULL) {
             retType = Type::errorType;
-            ReportError::IdentifierNotDeclared(left_id, LookingForVariable)
+            ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
         }
         else {
             VarDecl *var = dynamic_cast<VarDecl *>(d_Left);
@@ -259,17 +267,18 @@ void EqualityExpr::Check() {
     }
 
     if (t_Left == Type::voidType || t_Right == Type::voidType) {
-        ReportError::IncompatibleOperands(op, t_Left, t_Rright);
+        ReportError::IncompatibleOperands(op, t_Left, t_Right);
         retType = Type::errorType;
     }
     else if (t_Left->IsEquivalentTo(t_Right))
         retType = Type::boolType;
     else {
 
-        NamedType nt_Left = dynamic_cast<NamedType *>(left->GetType());
-        NamedType nt_Right = dynamic_cast<NamedType *>(right->GetID());
+        NamedType* nt_Left = dynamic_cast<NamedType *>(left->GetType());
+        NamedType* nt_Right = dynamic_cast<NamedType *>(right->GetID());
 
-        Decl* left_Decl = localScope->CheckDecl(nt_Left);
+        ClassDecl* left_Decl = dynamic_cast<ClassDecl*>(localScope->CheckDecl(nt_Left));
+        ClassDecl* right_Decl = dynamic_cast<ClassDecl*>(localScope->CheckDecl(nt_Right));
 
         if (true)
             retType = Type::boolType;
