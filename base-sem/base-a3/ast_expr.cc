@@ -209,6 +209,50 @@ void ArithmeticExpr::Check() {
     }
 }
 
+void RelationalExpr::Check() {
+
+    left->Check();
+    right->Check();
+
+    Type* t_Left = left->GetType();
+    Type* t_Right = right->GetType();
+
+    Identifier* left_Id = NULL;
+    Decl* left_Decl = NULL;
+
+    if (t_Left == NULL && left != NULL) {
+
+        left_Id = left->GetID();
+
+        left_Decl = localScope->CheckDecl(left_Id->GetName());
+
+        if (left_Decl == NULL) {
+            retType = Type::errorType;
+            ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
+        }
+    }
+    else {
+        VarDecl* var = dynamic_cast<VarDecl *>(left_Decl);
+        t_Left = var->GetType();
+    }
+
+    if (t_Left->IsEquivalentTo(t_Right)) {
+
+        if (t_Left == Type::nullType || t_Right == Type::nullType)
+            retType = Type::errorType;
+        else if (t_Left == Type::intType || t_Left == Type::doubleType)
+            retType = Type::boolType;
+        else {
+            retType = Type::errorType;
+            ReportError::IncompatibleOperands(op, t_Left, t_Right);
+        }
+    }
+    else {
+        retType = Type::errorType;
+        ReportError::IncompatibleOperands(op, t_Left, t_Right);
+    }
+}
+
 void AssignExpr::Check(){
     left->Check();
     right->Check();
