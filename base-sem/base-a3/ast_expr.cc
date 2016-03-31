@@ -11,6 +11,11 @@
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
 }
+
+Type* IntConstant::GetType() {
+    return Type::intType;
+}
+
 void IntConstant::PrintChildren(int indentLevel) {
     printf("%d", value);
 }
@@ -18,6 +23,11 @@ void IntConstant::PrintChildren(int indentLevel) {
 DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc) {
     value = val;
 }
+
+Type* DoubleConstant::GetType() {
+    return Type::doubleType;
+}
+
 void DoubleConstant::PrintChildren(int indentLevel) {
     printf("%g", value);
 }
@@ -25,6 +35,11 @@ void DoubleConstant::PrintChildren(int indentLevel) {
 BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc) {
     value = val;
 }
+
+Type* BoolConstant::GetType() {
+    return Type::boolType;
+}
+
 void BoolConstant::PrintChildren(int indentLevel) {
     printf("%s", value ? "true" : "false");
 }
@@ -33,8 +48,17 @@ StringConstant::StringConstant(yyltype loc, const char *val) : Expr(loc) {
     Assert(val != NULL);
     value = strdup(val);
 }
+
+Type* StringConstant::GetType() {
+    return Type::stringType;
+}
+
 void StringConstant::PrintChildren(int indentLevel) {
     printf("%s",value);
+}
+
+Type* NullConstant::GetType() {
+    return Type::nullType;
 }
 
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
@@ -94,13 +118,94 @@ Type* ArithmeticExpr::GetType() {
         t_left = left->GetType();
     }
 
-    if(t_right.IsEquivalentTo(t_left)){
+    if(t_right->IsEquivalentTo(t_left)){
         //Correct
         return t_right;
     }
     else{
         //Error
         return NULL;
+    }
+}
+
+void ArithmeticExpr::Check() {
+
+    if (left != NULL)
+        left->Check();
+    right->Check();
+
+    Type* t_Left = NULL;
+
+    if (left != NULL)
+        t_Left = left->GetType();
+
+    Type* t_Right = right->GetType();
+
+    Identifier* left_Id = NULL;
+    Decl* left_Decl = NULL;
+
+    if (t_Left == NULL && left != NULL) {
+
+        left_Id = left->GetID();
+
+        left_Decl = localScope->CheckDecl(left_Id->GetName());
+
+        if (left_Decl == NULL) {
+            retType = Type::errorType;
+            ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
+        }
+    }
+    else {
+        VarDecl* var = dynamic_cast<VarDecl *>(left_Decl);
+        t_Left = var->GetType();
+    }
+
+    Identifier* right_Id = NULL;
+    Decl* right_Decl = NULL;
+
+    if (t_Right == NULL && right != NULL) {
+
+        right_Id = right->GetID();
+
+        right_Decl = localScope->CheckDecl(right_Id->GetName());
+
+        if (left_Decl == NULL) {
+            retType = Type::errorType;
+            ReportError::IdentifierNotDeclared(right_Id, LookingForVariable);
+        }
+    }
+    else {
+        VarDecl* var = dynamic_cast<VarDecl *>(right_Decl);
+        t_Left = var->GetType();
+    }
+
+    if (left == NULL) {
+        if (t_Right == Type::doubleType || t_Right == Type::intType)
+        {
+            retType = t_Right;
+        }
+        else
+        {
+            ReportError::IncompatibleOperand(op, t_Right);
+            retType = Type::errorType;
+        }
+        return;
+    }
+
+    if (t_Left->IsEquivalentTo(t_Right)) {
+
+        if (t_Left == Type::errorType || t_Right == Type::errorType)
+            retType = Type::errorType;
+        else if (t_Left == Type::intType || t_Left == Type::doubleType)
+            retType = t_Left;
+        else {
+            retType = Type::errorType;
+            ReportError::IncompatibleOperands(op, t_Left, t_Right);
+        }
+    }
+    else {
+        retType = Type::errorType;
+        ReportError::IncompatibleOperands(op, t_Left, t_Right);
     }
 }
 
@@ -231,7 +336,7 @@ void LogicalExpr::Check() {
 
     Type *t_Left;
     if (left != NULL)
-        t_Left = left->GetType();   //Need to make a GetType() Function
+        t_Left = left->GetType();
 
     Type *t_Right = right->GetType();
 
@@ -297,11 +402,23 @@ void EqualityExpr::Check() {
         ClassDecl* left_Decl = dynamic_cast<ClassDecl*>(localScope->CheckDecl(nt_Left));
         ClassDecl* right_Decl = dynamic_cast<ClassDecl*>(localScope->CheckDecl(nt_Right));
 
-        if (true)
-            retType = Type::boolType;
-        else {
-            ReportError::IncompatibleOperands(op, t_Left, t_Right);
-            retType = Type::errorType;
+        NamedType* n = dynamic_cast<NamedType *>(left_Decl->GetExtendScope()->GetType());
+        Decl* d = left_Decl->GetExtendScope();
+
+        for (int i = 0; n != NULL; i++) {
+
+            if (n->IsEquivalentTo(nt_Right)) {
+                retType = Type::boolType;
+                return;
+            }
+            else {
+                ReportError::IncompatibleOperands(op, t_Left, t_Right);
+                retType = Type::errorType;
+                return;
+            }
+
+            n = dynamic_cast<NamedType *>(d->GetType());
+            d = d->GetExtendScope();
         }
     }
 }
