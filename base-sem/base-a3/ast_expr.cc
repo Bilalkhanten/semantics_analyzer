@@ -265,13 +265,18 @@ void EqualityExpr::Check() {
     else if (t_Left->IsEquivalentTo(t_Right))
         retType = Type::boolType;
     else {
-/*
-        if (t_Left->IsCompatible(t_Right))
+
+        NamedType nt_Left = dynamic_cast<NamedType *>(left->GetType());
+        NamedType nt_Right = dynamic_cast<NamedType *>(right->GetID());
+
+        Decl* left_Decl = localScope->CheckDecl(nt_Left);
+
+        if (true)
             retType = Type::boolType;
         else {
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
             retType = Type::errorType;
-        } */
+        }
     }
 }
 
