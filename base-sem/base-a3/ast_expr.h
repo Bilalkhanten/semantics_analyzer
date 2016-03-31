@@ -21,10 +21,10 @@ class Type; // for NewArray
 class Expr : public Stmt
 {
   public:
-    Expr(yyltype loc) : Stmt(loc) { retType = NULL;}
-    Expr() : Stmt() { retType = NULL;}
+    Expr(yyltype loc) : Stmt(loc) {}
+    Expr() : Stmt() {}
     void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
-    virtual Type* GetType() { return retType; }
+    virtual Type* GetType() { return NULL; }
     virtual NamedType* GetNamedType() { return NULL; }
     virtual Identifier* GetID() {return NULL;}
 };

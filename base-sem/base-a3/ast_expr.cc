@@ -180,7 +180,7 @@ void ArithmeticExpr::Check() {
     }
 
     if (left == NULL) {
-        if (!t_Right == Type::doubleType || !t_Right == Type::intType)
+        if (t_Right != Type::doubleType || t_Right != Type::intType)
         {
             ReportError::IncompatibleOperand(op, t_Right);
         }
@@ -190,9 +190,9 @@ void ArithmeticExpr::Check() {
     if (t_Left->IsEquivalentTo(t_Right)) {
 
         if (t_Left == Type::errorType || t_Right == Type::errorType)
-
+            ;
         else if (t_Left == Type::intType || t_Left == Type::doubleType)
-
+            ;
         else {
 
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
@@ -232,9 +232,9 @@ void RelationalExpr::Check() {
     if (t_Left->IsEquivalentTo(t_Right)) {
 
         if (t_Left == Type::nullType || t_Right == Type::nullType)
-
+            ;
         else if (t_Left == Type::intType || t_Left == Type::doubleType)
-
+            ;
         else {
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
         }
@@ -285,8 +285,6 @@ void EqualityExpr::Check() {
         NamedType* t_Left_Named = dynamic_cast<NamedType *>(t_Left);
         if (t_Left_Named == NULL)
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
-
-        retType = Type::boolType;
         return;
     }
 
@@ -309,7 +307,7 @@ void EqualityExpr::Check() {
         ReportError::IncompatibleOperands(op, t_Left, t_Right);
     }
     else if (t_Left->IsEquivalentTo(t_Right))
-
+        ;
     else {
 
         NamedType* nt_Left = dynamic_cast<NamedType *>(left->GetType());
