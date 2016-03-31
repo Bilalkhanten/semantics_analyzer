@@ -253,6 +253,8 @@ void RelationalExpr::Check() {
     }
 }
 
+
+
 void AssignExpr::Check(){
     left->Check();
     right->Check();
