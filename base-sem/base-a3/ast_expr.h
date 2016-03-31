@@ -24,10 +24,12 @@ protected:
     Type *retType;
 
   public:
-    Expr(yyltype loc) : Stmt(loc) {}
-    Expr() : Stmt() {}
+    Expr(yyltype loc) : Stmt(loc) { retType = NULL;}
+    Expr() : Stmt() { retType = NULL;}
     void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
-    virtual Type* GetType() { retType = NULL; return retType;}
+    Type* GetType() {return retType;}
+
+    virtual Identifier* GetID() {return NULL;}
 };
 
 class ExprError : public Expr
