@@ -27,8 +27,8 @@ protected:
     Expr(yyltype loc) : Stmt(loc) { retType = NULL;}
     Expr() : Stmt() { retType = NULL;}
     void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
-    Type* GetType() {return retType;}
-
+    virtual Type* GetType() { return retType; }
+    virtual NamedType* GetNamedType() { return NULL; }
     virtual Identifier* GetID() {return NULL;}
 };
 
@@ -128,6 +128,7 @@ class CompoundExpr : public Expr
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
     void BuildScope(SymbolTable* s);
+    Type* GetType();
     void PrintChildren(int indentLevel);
 };
 
@@ -140,6 +141,7 @@ class PostfixExpr : public Expr
   public:
     PostfixExpr(Expr *lhs, Operator *op);
     const char *GetPrintNameForNode() { return "PostfixExpr"; }
+    Type* GetType() { return left->GetType(); }
     void PrintChildren(int indentLevel);
 };
 
@@ -149,7 +151,6 @@ class ArithmeticExpr : public CompoundExpr
     void Check();
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
-    Type* GetType();
     const char *GetPrintNameForNode() { return "ArithmeticExpr"; }
 };
 
@@ -209,6 +210,7 @@ class ArrayAccess : public LValue
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
     const char *GetPrintNameForNode() { return "ArrayAccess"; }
+    Type* GetType();
     void PrintChildren(int indentLevel);
 };
 
@@ -227,6 +229,7 @@ class FieldAccess : public LValue
     void Check();
     void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; if(base != NULL) {base->BuildScope(s);} }
     const char *GetPrintNameForNode() { return "FieldAccess"; }
+    Type* GetType();
     void PrintChildren(int indentLevel);
 };
 
@@ -263,6 +266,7 @@ class NewExpr : public Expr
   public:
     NewExpr(yyltype loc, NamedType *clsType);
     const char *GetPrintNameForNode() { return "NewExpr"; }
+    NamedType* GetNamedType() { return cType; }
     void PrintChildren(int indentLevel);
 };
 
@@ -275,6 +279,7 @@ class NewArrayExpr : public Expr
   public:
     NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
     const char *GetPrintNameForNode() { return "NewArrayExpr"; }
+    Type* GetType() { return elemType; }
     void PrintChildren(int indentLevel);
 };
 

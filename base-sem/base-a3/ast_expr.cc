@@ -86,6 +86,22 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
 
+Type* CompoundExpr::GetType(){
+    if(left == NULL){
+        return right->GetType();
+    }
+    Type* t_left = left->GetType();
+    Type* t_right = right->GetType();
+
+    if(t_left->IsEquivalentTo(t_right)){
+        return t_left;
+    }
+    else{
+        //Error
+        return NULL;
+    }
+}
+
 void CompoundExpr::PrintChildren(int indentLevel) {
    if (left) left->Print(indentLevel+1);
    op->Print(indentLevel+1);
@@ -97,6 +113,9 @@ void CompoundExpr::BuildScope(SymbolTable* s){
     localScope = s;
     Assert(s != NULL);
     right->SetScope(s);
+    if(left != NULL){
+        left->SetScope(s);
+    }
 }
 
 PostfixExpr::PostfixExpr(Expr *l,Operator *o)
@@ -109,23 +128,6 @@ PostfixExpr::PostfixExpr(Expr *l,Operator *o)
 void PostfixExpr::PrintChildren(int indentLevel) {
     left->Print(indentLevel+1);
     op->Print(indentLevel+1);
-}
-
-Type* ArithmeticExpr::GetType() {
-    Type* t_right = right->GetType();
-    Type* t_left;
-    if(left != NULL){
-        t_left = left->GetType();
-    }
-
-    if(t_right->IsEquivalentTo(t_left)){
-        //Correct
-        return t_right;
-    }
-    else{
-        //Error
-        return NULL;
-    }
 }
 
 void ArithmeticExpr::Check() {
@@ -253,125 +255,9 @@ void RelationalExpr::Check() {
     }
 }
 
+<<<<<<< HEAD
 
-
-void AssignExpr::Check(){
-    left->Check();
-    right->Check();
-}
-
-void AssignExpr::BuildScope(SymbolTable* s){
-    left->BuildScope(s);
-    right->BuildScope(s);
-
-
-}
-
-ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
-    (base=b)->SetParent(this);
-    (subscript=s)->SetParent(this);
-}
-
-void ArrayAccess::PrintChildren(int indentLevel) {
-    base->Print(indentLevel+1);
-    subscript->Print(indentLevel+1, "(subscript) ");
-  }
-
-FieldAccess::FieldAccess(Expr *b, Identifier *f)
-  : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
-    Assert(f != NULL); // b can be be NULL (just means no explicit base)
-    base = b;
-    if (base) base->SetParent(this);
-    (field=f)->SetParent(this);
-}
-
-
-void FieldAccess::PrintChildren(int indentLevel) {
-    if (base) base->Print(indentLevel+1);
-    field->Print(indentLevel+1);
-  }
-
-void FieldAccess::Check(){
-    Assert(localScope != NULL);
-
-    Decl* n = localScope->CheckDecl(field->GetName());
-    SymbolTable* current = new SymbolTable();
-    current = localScope;
-    bool found = false;
-
-    if(base){
-        //Get top level class declarations
-        SymbolTable* parentT = new SymbolTable();
-        SymbolTable* classT = new SymbolTable();
-
-        if(current->GetParentTable() == NULL){
-            //this. was used outside a class declaration.
-            This* t = new This(*location);
-            ReportError::ThisOutsideClassScope(t);
-            return;
-        }
-
-        while(current->GetParentTable() != NULL && !found){
-            if(current->GetClassDecl() != NULL){
-                classT = current;
-                found = true;
-                break;
-            }
-            current = current->GetParentTable();
-            parentT = current;
-        }
-        if(!found){
-            cout << "Error: Not within class scope.";
-        }
-        found = false;
-
-        if(current->GetClassDecl() == NULL){
-            This* t = new This(*location);
-            ReportError::ThisOutsideClassScope(t);
-            return;
-        }
-
-        Decl* n = classT->CheckDecl(field->GetName());
-        ClassDecl* c = classT->GetClassDecl();
-
-        if(n == NULL){
-            Decl* extends = c->GetExtendScope();
-            Decl* temp = extends->GetScope()->CheckDecl(field->GetName());
-
-            if(temp != NULL){
-                return;
-            }
-
-            List<Decl*>* implements = c->GetImplementScope();
-            for (int i = 0; i < implements->NumElements(); i++){
-                Decl* implement = implements->Nth(i);
-                temp = implement->GetScope()->CheckDecl(field->GetName());
-                if(temp != NULL){
-                    return;
-                }
-            }
-
-            ReportError::IdentifierNotDeclared(field, LookingForVariable);
-        }
-
-        return;
-    }
-
-    while(current != NULL && !found){
-        n = current->CheckDecl(field->GetName());
-        if(n != NULL){
-            found = true;
-            break;
-        }
-        current = current->GetParentTable();
-    }
-
-    if(!found){
-        ReportError::IdentifierNotDeclared(field, LookingForVariable);
-        return;
-    }
-}
-
+=======
 void LogicalExpr::Check() {
     Type *t = Type::boolType;
 
@@ -466,6 +352,141 @@ void EqualityExpr::Check() {
             n = dynamic_cast<NamedType *>(d->GetType());
             d = d->GetExtendScope();
         }
+    }
+}
+>>>>>>> d2a47650af3623ae1450730ba83cfda5bb1950be
+
+void AssignExpr::Check(){
+    left->Check();
+    right->Check();
+}
+
+void AssignExpr::BuildScope(SymbolTable* s){
+    left->BuildScope(s);
+    right->BuildScope(s);
+
+
+}
+
+ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
+    (base=b)->SetParent(this);
+    (subscript=s)->SetParent(this);
+}
+
+Type* ArrayAccess::GetType(){
+    return base->GetType();
+}
+
+void ArrayAccess::PrintChildren(int indentLevel) {
+    base->Print(indentLevel+1);
+    subscript->Print(indentLevel+1, "(subscript) ");
+  }
+
+FieldAccess::FieldAccess(Expr *b, Identifier *f)
+  : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
+    Assert(f != NULL); // b can be be NULL (just means no explicit base)
+    base = b;
+    if (base) base->SetParent(this);
+    (field=f)->SetParent(this);
+}
+
+Type* FieldAccess::GetType(){
+    SymbolTable* current = new SymbolTable();
+    current = localScope;
+    while(current != NULL){
+        Decl* d = localScope->CheckDecl(field->GetName());
+        if(d != NULL){
+            return d->GetType();
+        }
+        current = current->GetParentTable();
+    }
+    //Error: Did not find the declaration.
+    return NULL;
+}
+
+void FieldAccess::PrintChildren(int indentLevel) {
+    if (base) base->Print(indentLevel+1);
+    field->Print(indentLevel+1);
+  }
+
+void FieldAccess::Check(){
+    Assert(localScope != NULL);
+
+    Decl* n = localScope->CheckDecl(field->GetName());
+    SymbolTable* current = new SymbolTable();
+    current = localScope;
+    bool found = false;
+
+    if(base){
+        //Get top level class declarations
+        SymbolTable* parentT = new SymbolTable();
+        SymbolTable* classT = new SymbolTable();
+
+        if(current->GetParentTable() == NULL){
+            //this. was used outside a class declaration.
+            This* t = new This(*location);
+            ReportError::ThisOutsideClassScope(t);
+            return;
+        }
+
+        while(current->GetParentTable() != NULL && !found){
+            if(current->GetClassDecl() != NULL){
+                classT = current;
+                found = true;
+                break;
+            }
+            current = current->GetParentTable();
+            parentT = current;
+        }
+        if(!found){
+            cout << "Error: Not within class scope.";
+        }
+        found = false;
+
+        if(current->GetClassDecl() == NULL){
+            This* t = new This(*location);
+            ReportError::ThisOutsideClassScope(t);
+            return;
+        }
+
+        Decl* n = classT->CheckDecl(field->GetName());
+        ClassDecl* c = classT->GetClassDecl();
+
+        if(n == NULL){
+            Decl* extends = c->GetExtendScope();
+            Decl* temp = extends->GetScope()->CheckDecl(field->GetName());
+
+            if(temp != NULL){
+                return;
+            }
+
+            List<Decl*>* implements = c->GetImplementScope();
+            for (int i = 0; i < implements->NumElements(); i++){
+                Decl* implement = implements->Nth(i);
+                temp = implement->GetScope()->CheckDecl(field->GetName());
+                if(temp != NULL){
+                    return;
+                }
+            }
+
+            ReportError::IdentifierNotDeclared(field, LookingForVariable);
+        }
+
+        return;
+    }
+
+    while(current != NULL && !found){
+        n = current->CheckDecl(field->GetName());
+        if(n != NULL){
+            found = true;
+            break;
+        }
+        current = current->GetParentTable();
+    }
+
+    if(!found){
+        ReportError::IdentifierNotDeclared(field, LookingForVariable);
+        return;
     }
 }
 
