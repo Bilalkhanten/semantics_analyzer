@@ -20,9 +20,6 @@ class Type; // for NewArray
 
 class Expr : public Stmt
 {
-protected:
-    Type *retType;
-
   public:
     Expr(yyltype loc) : Stmt(loc) { retType = NULL;}
     Expr() : Stmt() { retType = NULL;}

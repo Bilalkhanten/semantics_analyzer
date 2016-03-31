@@ -153,7 +153,6 @@ void ArithmeticExpr::Check() {
         left_Decl = localScope->CheckDecl(left_Id->GetName());
 
         if (left_Decl == NULL) {
-            retType = Type::errorType;
             ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
         }
     }
@@ -172,7 +171,6 @@ void ArithmeticExpr::Check() {
         right_Decl = localScope->CheckDecl(right_Id->GetName());
 
         if (left_Decl == NULL) {
-            retType = Type::errorType;
             ReportError::IdentifierNotDeclared(right_Id, LookingForVariable);
         }
     }
@@ -182,14 +180,9 @@ void ArithmeticExpr::Check() {
     }
 
     if (left == NULL) {
-        if (t_Right == Type::doubleType || t_Right == Type::intType)
-        {
-            retType = t_Right;
-        }
-        else
+        if (!t_Right == Type::doubleType || !t_Right == Type::intType)
         {
             ReportError::IncompatibleOperand(op, t_Right);
-            retType = Type::errorType;
         }
         return;
     }
@@ -197,16 +190,15 @@ void ArithmeticExpr::Check() {
     if (t_Left->IsEquivalentTo(t_Right)) {
 
         if (t_Left == Type::errorType || t_Right == Type::errorType)
-            retType = Type::errorType;
+
         else if (t_Left == Type::intType || t_Left == Type::doubleType)
-            retType = t_Left;
+
         else {
-            retType = Type::errorType;
+
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
         }
     }
     else {
-        retType = Type::errorType;
         ReportError::IncompatibleOperands(op, t_Left, t_Right);
     }
 }
@@ -229,7 +221,6 @@ void RelationalExpr::Check() {
         left_Decl = localScope->CheckDecl(left_Id->GetName());
 
         if (left_Decl == NULL) {
-            retType = Type::errorType;
             ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
         }
     }
@@ -241,23 +232,18 @@ void RelationalExpr::Check() {
     if (t_Left->IsEquivalentTo(t_Right)) {
 
         if (t_Left == Type::nullType || t_Right == Type::nullType)
-            retType = Type::errorType;
+
         else if (t_Left == Type::intType || t_Left == Type::doubleType)
-            retType = Type::boolType;
+
         else {
-            retType = Type::errorType;
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
         }
     }
     else {
-        retType = Type::errorType;
         ReportError::IncompatibleOperands(op, t_Left, t_Right);
     }
 }
 
-<<<<<<< HEAD
-
-=======
 void LogicalExpr::Check() {
     Type *t = Type::boolType;
 
@@ -311,7 +297,6 @@ void EqualityExpr::Check() {
         Decl *d_Left = localScope->CheckDecl(left_Id->GetName());
 
         if (d_Left == NULL) {
-            retType = Type::errorType;
             ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
         }
         else {
@@ -322,10 +307,9 @@ void EqualityExpr::Check() {
 
     if (t_Left == Type::voidType || t_Right == Type::voidType) {
         ReportError::IncompatibleOperands(op, t_Left, t_Right);
-        retType = Type::errorType;
     }
     else if (t_Left->IsEquivalentTo(t_Right))
-        retType = Type::boolType;
+
     else {
 
         NamedType* nt_Left = dynamic_cast<NamedType *>(left->GetType());
@@ -340,12 +324,10 @@ void EqualityExpr::Check() {
         for (int i = 0; n != NULL; i++) {
 
             if (n->IsEquivalentTo(nt_Right)) {
-                retType = Type::boolType;
                 return;
             }
             else {
                 ReportError::IncompatibleOperands(op, t_Left, t_Right);
-                retType = Type::errorType;
                 return;
             }
 
@@ -354,7 +336,6 @@ void EqualityExpr::Check() {
         }
     }
 }
->>>>>>> d2a47650af3623ae1450730ba83cfda5bb1950be
 
 void AssignExpr::Check(){
     left->Check();
@@ -364,8 +345,6 @@ void AssignExpr::Check(){
 void AssignExpr::BuildScope(SymbolTable* s){
     left->BuildScope(s);
     right->BuildScope(s);
-
-
 }
 
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
