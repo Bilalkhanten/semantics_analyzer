@@ -151,7 +151,19 @@ void ForStmt::PrintChildren(int indentLevel) {
 void ForStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+
+    init->BuildScope(s);
+    test->BuildScope(s);
+    step->BuildScope(s);
     body->BuildScope(s);
+}
+
+void ForStmt::Check(){
+    init->Check();
+    test->Check();
+    step->Check();
+
+    body->Check();
 }
 
 void WhileStmt::PrintChildren(int indentLevel) {
@@ -162,7 +174,18 @@ void WhileStmt::PrintChildren(int indentLevel) {
 void WhileStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+
+    test->BuildScope(s);
     body->BuildScope(s);
+}
+
+void WhileStmt::Check(){
+    if(test->GetType() != Type::boolType){
+        ReportError::TestNotBoolean(test);
+    }
+
+    test->Check();
+    body->Check();
 }
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
@@ -180,11 +203,24 @@ void IfStmt::PrintChildren(int indentLevel) {
 void IfStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
-
+    test->BuildScope(s);
     body->BuildScope(s);
 
     if(elseBody){
         elseBody->BuildScope(s);
+    }
+}
+
+void IfStmt::Check(){
+    test->Check();
+    body->Check();
+
+    if(test->GetType() != Type::boolType){
+        ReportError::TestNotBoolean(test);
+    }
+
+    if(elseBody){
+        elseBody->Check();
     }
 }
 
@@ -193,6 +229,18 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     (expr=e)->SetParent(this);
 }
 
+void ReturnStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
+    localScope = s;
+
+    expr->BuildScope(s);
+}
+
+void ReturnStmt::Check(){
+    expr->Check();
+}
+
+
 void ReturnStmt::PrintChildren(int indentLevel) {
     expr->Print(indentLevel+1);
 }
@@ -200,6 +248,24 @@ void ReturnStmt::PrintChildren(int indentLevel) {
 PrintStmt::PrintStmt(List<Expr*> *a) {
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
+}
+
+void PrintStmt::BuildScope(SymbolTable* s){
+    localScope = new SymbolTable();
+    localScope = s;
+
+    for(int i = 0; i < args->NumElements(); i++){
+        args->Nth(i)->BuildScope(s);
+    }
+}
+
+void PrintStmt::Check(){
+    for(int i = 0; i < args->NumElements(); i++){
+        Type* t = args->Nth(i)->GetType();
+        if(t != Type::intType && t != Type::boolType && t != Type::stringType){
+            ReportError::PrintArgMismatch(args->Nth(i), i, t);
+        }
+    }
 }
 
 void PrintStmt::PrintChildren(int indentLevel) {
@@ -218,17 +284,23 @@ SwitchLabel::SwitchLabel(List<Stmt*> *s) {
     (stmts=s)->SetParentAll(this);
 }
 
-void SwitchLabel::PrintChildren(int indentLevel) {
-    if (label) label->Print(indentLevel+1);
-    stmts->PrintAll(indentLevel+1);
-}
-
 void SwitchLabel::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
     for(int i = 0; i < stmts->NumElements(); i++){
         stmts->Nth(i)->BuildScope(s);
     }
+}
+
+void SwitchLabel::Check(){
+    for(int i = 0; i < stmts->NumElements(); i++){
+        stmts->Nth(i)->Check();
+    }
+}
+
+void SwitchLabel::PrintChildren(int indentLevel) {
+    if (label) label->Print(indentLevel+1);
+    stmts->PrintAll(indentLevel+1);
 }
 
 SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {
@@ -242,9 +314,22 @@ SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {
 void SwitchStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+    expr->BuildScope(s);
+    def->BuildScope(s);
 
     for (int i = 0; i < cases->NumElements(); i++){
         cases->Nth(i)->BuildScope(localScope);
+    }
+}
+void SwitchStmt::Check(){
+    if(expr->GetType() != Type::intType){
+        ReportError::SwitchStmtNotInt(expr);
+    }
+    expr->Check();
+    def->Check();
+
+    for(int i = 0; i < cases->NumElements(); i++){
+        cases->Nth(i)->Check();
     }
 }
 

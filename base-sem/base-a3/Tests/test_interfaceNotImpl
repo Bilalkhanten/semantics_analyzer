@@ -1,0 +1,16 @@
+interface Animal{
+	void eat();
+}
+
+class Dog implements Animal{
+	void eating(){
+		//Do something
+	}
+	void eat(int x){
+	}
+}
+
+int main(){
+	int x;
+	x = 0;
+}
