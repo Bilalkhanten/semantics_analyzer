@@ -143,11 +143,20 @@ void FieldAccess::Check(){
             return;
         }
 
-        while(current->GetParentTable() != NULL){
-            classT = current;
+        while(current->GetParentTable() != NULL && !found){
+            cout << "up" << endl;
+            if(current->GetClassDecl() != NULL){
+                classT = current;
+                found = true;
+                break;
+            }
             current = current->GetParentTable();
             parentT = current;
         }
+        if(!found){
+            cout << "Error: Not within class scope.";
+        }
+        found = false;
 
         if(current->GetClassDecl() == NULL){
             This* t = new This(*location);

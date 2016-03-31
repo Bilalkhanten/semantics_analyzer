@@ -79,7 +79,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
         }
         if(!found){
             ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass);
-                return;
+            return;
         }
     }
 
@@ -115,6 +115,12 @@ void ClassDecl::BuildScope(SymbolTable* s){
     }
 }
 
+void ClassDecl::Check(){
+    for(int i = 0; i < members->NumElements(); i++){
+        members->Nth(i)->Check();
+    }
+}
+
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     Assert(n != NULL && m != NULL);
     (members=m)->SetParentAll(this);
@@ -139,6 +145,12 @@ void InterfaceDecl::BuildScope(SymbolTable* s){
             return;
         }
         scopeTable->AddDecl(d, overwrite);
+    }
+}
+
+void InterfaceDecl::Check(){
+    for(int i = 0; i < members->NumElements(); i++){
+        members->Nth(i)->Check();
     }
 }
 
