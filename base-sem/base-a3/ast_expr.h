@@ -59,6 +59,7 @@ class IntConstant : public Expr
   public:
     IntConstant(yyltype loc, int val);
     const char *GetPrintNameForNode() { return "IntConstant"; }
+    Type* GetType() { return Type::intType; }
     void PrintChildren(int indentLevel);
 };
 
@@ -70,6 +71,7 @@ class DoubleConstant : public Expr
   public:
     DoubleConstant(yyltype loc, double val);
     const char *GetPrintNameForNode() { return "DoubleConstant"; }
+    Type* GetType() { return Type::doubleType; }
     void PrintChildren(int indentLevel);
 };
 
@@ -81,6 +83,7 @@ class BoolConstant : public Expr
   public:
     BoolConstant(yyltype loc, bool val);
     const char *GetPrintNameForNode() { return "BoolConstant"; }
+    Type* GetType() { return Type::boolType; }
     void PrintChildren(int indentLevel);
 };
 
@@ -92,6 +95,7 @@ class StringConstant : public Expr
   public:
     StringConstant(yyltype loc, const char *val);
     const char *GetPrintNameForNode() { return "StringConstant"; }
+    Type* GetType() { return Type::stringType; }
     void PrintChildren(int indentLevel);
 };
 
@@ -100,6 +104,7 @@ class NullConstant: public Expr
   public:
     NullConstant(yyltype loc) : Expr(loc) {}
     const char *GetPrintNameForNode() { return "NullConstant"; }
+    Type* GetType() { return Type::nullType; }
 };
 
 class Operator : public Node
@@ -143,6 +148,7 @@ class ArithmeticExpr : public CompoundExpr
   public:
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
+    Type* GetType();
     const char *GetPrintNameForNode() { return "ArithmeticExpr"; }
 };
 

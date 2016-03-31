@@ -87,6 +87,23 @@ void PostfixExpr::PrintChildren(int indentLevel) {
     op->Print(indentLevel+1);
 }
 
+Type* ArithmeticExpr::GetType() {
+    Type* t_right = right->GetType();
+    Type* t_left;
+    if(left != NULL){
+        t_left = left->GetType();
+    }
+
+    if(t_right.IsEquivalentTo(t_left)){
+        //Correct
+        return t_right;
+    }
+    else{
+        //Error
+        return NULL;
+    }
+}
+
 void AssignExpr::Check(){
     left->Check();
     right->Check();
