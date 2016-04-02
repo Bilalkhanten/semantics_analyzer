@@ -23,7 +23,7 @@ class Expr : public Stmt
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
-    void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
+    void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
     virtual Type* GetType() { return NULL; }
     virtual NamedType* GetNamedType() { return NULL; }
     virtual Identifier* GetID() {return NULL;}
@@ -149,6 +149,7 @@ class ArithmeticExpr : public CompoundExpr
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "ArithmeticExpr"; }
+    Type* GetType();
 };
 
 class RelationalExpr : public CompoundExpr
@@ -157,6 +158,7 @@ class RelationalExpr : public CompoundExpr
     void Check();
     RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "RelationalExpr"; }
+    Type* GetType();
 };
 
 class EqualityExpr : public CompoundExpr
@@ -165,6 +167,7 @@ class EqualityExpr : public CompoundExpr
     void Check();
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "EqualityExpr"; }
+    Type* GetType();
 };
 
 class LogicalExpr : public CompoundExpr
@@ -174,6 +177,7 @@ class LogicalExpr : public CompoundExpr
     LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "LogicalExpr"; }
+    Type* GetType();
 };
 
 class AssignExpr : public CompoundExpr
@@ -183,6 +187,7 @@ class AssignExpr : public CompoundExpr
     void BuildScope(SymbolTable* s);
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "AssignExpr"; }
+    Type* GetType();
 };
 
 class LValue : public Expr
