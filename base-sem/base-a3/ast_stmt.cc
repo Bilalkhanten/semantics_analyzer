@@ -36,6 +36,10 @@ void SymbolTable::SetClassDecl(ClassDecl* d){
     this->decl = d;
 }
 
+void SymbolTable::SetFnDecl(FnDecl* d){
+    this->fnDecl = d;
+}
+
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
@@ -99,6 +103,15 @@ void StmtBlock::PrintChildren(int indentLevel) {
     stmts->PrintAll(indentLevel+1);
 }
 
+bool StmtBlock::isReturn(){
+    for(int i = 0; i < stmts->NumElements(); i++){
+        if(stmts->Nth(i)->isReturn()){
+            return true;
+        }
+    }
+    return false;
+}
+
 void StmtBlock::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
@@ -132,6 +145,8 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
 void ConditionalStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+
+    test->BuildScope(s);
     body->BuildScope(s);
 }
 
@@ -175,16 +190,18 @@ void WhileStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
 
-    test->BuildScope(s);
-    body->BuildScope(s);
+    test->BuildScope(localScope);
+    body->BuildScope(localScope);
 }
 
 void WhileStmt::Check(){
-    if(test->GetType() != Type::boolType){
+    Assert(test->GetType() != NULL);
+    if(test->GetType()->GetTypeName() != Type::boolType->GetTypeName()){
         ReportError::TestNotBoolean(test);
     }
-
+    cout << "herleg;ljEG;/" << endl;
     test->Check();
+    cout << "herleg;ljEG;/" << endl;
     body->Check();
 }
 
@@ -224,6 +241,21 @@ void IfStmt::Check(){
     }
 }
 
+bool IfStmt::isReturn(){
+    if(body->isReturn()){
+        return true;
+    }
+    else{
+        if(elseBody){
+            if(elseBody->isReturn()){
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+}
+
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     Assert(e != NULL);
     (expr=e)->SetParent(this);
@@ -238,6 +270,55 @@ void ReturnStmt::BuildScope(SymbolTable* s){
 
 void ReturnStmt::Check(){
     expr->Check();
+
+    SymbolTable* current = localScope;
+    if(current->GetParentTable() == NULL){
+        //Error: return used outside a function.
+        cout << "Error: return used outside a function." << endl;
+        return;
+    }
+
+    FnDecl* decl;
+    bool found = false;
+    while(current != NULL && !found){
+        decl = current->GetFnDecl();
+        if(decl != NULL){
+            found = true;
+        }
+        current = current->GetParentTable();
+    }
+    if(!found){
+        //return not used in a function
+    }
+    if(expr->isEmpty()){
+        if(decl->GetType() == Type::voidType){
+            cout << "Good void return";
+            return;
+        }
+        else{
+            ReportError::ReturnMismatch(this, expr->GetType(), decl->GetType());
+            return;
+        }
+    }
+
+
+    Type* t = expr->GetType();
+    if(t == NULL){
+        cout << "NULL Here";
+        return;
+    }
+    else{
+        if( t->GetTypeName() == decl->GetType()->GetTypeName()){
+
+            cout << "Good return value." << endl;
+            return;
+        }
+        else{
+            cout << "Error" << endl;
+            ReportError::ReturnMismatch(this, t, decl->GetType());
+            return;
+        }
+    }
 }
 
 
@@ -292,6 +373,17 @@ void SwitchLabel::BuildScope(SymbolTable* s){
     }
 }
 
+bool SwitchLabel::caseReturn(){
+    bool found = false;
+    for(int i = 0; i < stmts->NumElements(); i++){
+        found = stmts->Nth(i)->isReturn();
+        if(found){
+            return true;
+        }
+    }
+    return false;
+}
+
 void SwitchLabel::Check(){
     for(int i = 0; i < stmts->NumElements(); i++){
         stmts->Nth(i)->Check();
@@ -311,23 +403,47 @@ SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {
     if (def) def->SetParent(this);
 }
 
+bool SwitchStmt::isReturn(){
+    if(def){
+        if(def->caseReturn()){
+            return true;
+        }
+    }
+    Assert(cases->Nth(0) != NULL);
+
+    Case* c = cases->Nth(0);
+    Assert(c != NULL);
+    c->caseReturn();
+
+    for(int i = 0; i < cases->NumElements(); i++){
+        Assert(cases->Nth(i) != NULL);
+        Case* c1 = cases->Nth(i);
+        bool found = c1->caseReturn();
+        if(found){
+            return true;
+        }
+    }
+    return false;
+}
+
 void SwitchStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
     expr->BuildScope(s);
-    def->BuildScope(s);
-
+    if(def) def->BuildScope(s);
     for (int i = 0; i < cases->NumElements(); i++){
-        cases->Nth(i)->BuildScope(localScope);
+        cases->Nth(i)->BuildScope(s);
     }
 }
-void SwitchStmt::Check(){
-    if(expr->GetType() != Type::intType){
-        ReportError::SwitchStmtNotInt(expr);
-    }
-    expr->Check();
-    def->Check();
 
+void SwitchStmt::Check(){
+    if(expr->GetType()->GetTypeName() != Type::intType->GetTypeName()){
+        ReportError::SwitchStmtNotInt(expr);
+        return;
+    }
+
+    expr->Check();
+    if(def) def->Check();
     for(int i = 0; i < cases->NumElements(); i++){
         cases->Nth(i)->Check();
     }

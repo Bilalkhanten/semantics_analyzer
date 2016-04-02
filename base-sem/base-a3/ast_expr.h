@@ -20,14 +20,12 @@ class Type; // for NewArray
 
 class Expr : public Stmt
 {
-protected:
-    Type *retType;
-
   public:
-    Expr(yyltype loc) : Stmt(loc) { retType = NULL;}
-    Expr() : Stmt() { retType = NULL;}
-    void SetScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
-    virtual Type* GetType() { return retType; }
+    Expr(yyltype loc) : Stmt(loc) {}
+    Expr() : Stmt() {}
+    void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
+    virtual bool isEmpty() { return false; }
+    virtual Type* GetType() { return NULL; }
     virtual NamedType* GetNamedType() { return NULL; }
     virtual Identifier* GetID() {return NULL;}
 };
@@ -48,6 +46,7 @@ class ExprError : public Expr
 class EmptyExpr : public Expr
 {
   public:
+    bool isEmpty() { return true; }
     const char *GetPrintNameForNode() { return "Empty"; }
 };
 
@@ -127,7 +126,7 @@ class CompoundExpr : public Expr
   public:
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
-    void BuildScope(SymbolTable* s);
+    virtual void BuildScope(SymbolTable* s);
     Type* GetType();
     void PrintChildren(int indentLevel);
 };
@@ -158,6 +157,7 @@ class RelationalExpr : public CompoundExpr
 {
   public:
     void Check();
+    Type* GetType();
     RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "RelationalExpr"; }
 };
@@ -166,6 +166,7 @@ class EqualityExpr : public CompoundExpr
 {
   public:
     void Check();
+    Type* GetType();
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "EqualityExpr"; }
 };
@@ -174,6 +175,7 @@ class LogicalExpr : public CompoundExpr
 {
   public:
     void Check();
+    Type* GetType();
     LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "LogicalExpr"; }
@@ -184,6 +186,7 @@ class AssignExpr : public CompoundExpr
   public:
     void Check();
     void BuildScope(SymbolTable* s);
+    Type* GetType();
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "AssignExpr"; }
 };
@@ -192,7 +195,7 @@ class LValue : public Expr
 {
   public:
     LValue(yyltype loc) : Expr(loc) {}
-    virtual void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); }
+    void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; }
 };
 
 class This : public Expr
@@ -227,7 +230,7 @@ class FieldAccess : public LValue
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
     void Check();
-    void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; if(base != NULL) {base->BuildScope(s);} }
+    void BuildScope(SymbolTable* s) { Assert(s!=NULL);localScope = new SymbolTable(); localScope = s; if(base != NULL) {base->BuildScope(s);} }
     const char *GetPrintNameForNode() { return "FieldAccess"; }
     Type* GetType();
     void PrintChildren(int indentLevel);
@@ -247,6 +250,7 @@ class Call : public Expr
   public:
     Call() : Expr(), base(NULL), field(NULL), actuals(NULL) {}
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
+    Type* GetType();
     const char *GetPrintNameForNode() { return "Call"; }
     void PrintChildren(int indentLevel);
 };

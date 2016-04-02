@@ -289,6 +289,7 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
     formalsTable = new SymbolTable();
     types = new List<Type*>();
     formalsTable->SetParentTable(parentScope);
+    formalsTable->SetFnDecl(this);
     for (int i = 0; i < formals->NumElements(); i++){
         Decl* n = formalsTable->CheckDecl(formals->Nth(i));
 
@@ -308,6 +309,15 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
 
 void FnDecl::Check(){
     if(body != NULL){
+        Assert(body!=NULL);
+
+        bool found = body->isReturn();
+        if(!found){
+            if(returnType->GetTypeName() != Type::voidType->GetTypeName()){
+                //Return not found
+                cout << "Return not found." << endl;
+            }
+        }
         body->Check();
     }
 }

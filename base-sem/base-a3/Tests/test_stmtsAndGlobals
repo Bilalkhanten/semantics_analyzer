@@ -13,7 +13,7 @@ class Dog{
 
 }
 
-int main(){
+int main(){/**
 	if(y == z){
 		int x;
 		int temp;
@@ -23,19 +23,19 @@ int main(){
 		if(x == t){
 			y = z;
 		}
-	}
+	}**/
 	
-	while(x == t){
-		x = x - 1;
+	while(x == t){/**
+		//x = x - 1;
 		if(x == 3){
-			t = t + 1;
+			//t = t + 1;
 		}
 		else{
-			z = false;
-		}
+			//z = false;
+		}**/
 	}
-
+	/**
 	for( i = 0; i < x; i++){
 		x--;
-	}
+	}**/
 }

@@ -87,6 +87,7 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
 }
 
 Type* CompoundExpr::GetType(){
+		cout << "Here1" << endl; cout << "here1" << endl;
     if(left == NULL){
         return right->GetType();
     }
@@ -94,13 +95,15 @@ Type* CompoundExpr::GetType(){
     Type* t_right = right->GetType();
 
     if(t_left->IsEquivalentTo(t_right)){
+    		cout << "Here1" << endl; cout << "here1" << t_left->GetTypeName() << endl;
         return t_left;
     }
     else{
         //Error
-        return NULL;
-    }
-}
+        cout << "Here" << endl; cout << "here" << endl;
+        return NULL; //I can't see scrolling // Ok, jw  // Can you try this and see if you get any output?kk
+    } // seeing same errors// thats what if figured look below // Maybe it's something to do with method inheritance and did you get any output? // Try this and see if there's any output
+}			// add some cout's in Expr::BUildScope and Stmt::BuildScope() in stmt.cc in think.
 
 void CompoundExpr::PrintChildren(int indentLevel) {
    if (left) left->Print(indentLevel+1);
@@ -112,9 +115,9 @@ void CompoundExpr::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope = s;
     Assert(s != NULL);
-    right->SetScope(s);
+    right->BuildScope(s);
     if(left != NULL){
-        left->SetScope(s);
+        left->BuildScope(s);
     }
 }
 
@@ -143,73 +146,84 @@ void ArithmeticExpr::Check() {
 
     Type* t_Right = right->GetType();
 
-    Identifier* left_Id = NULL;
-    Decl* left_Decl = NULL;
 
     if (t_Left == NULL && left != NULL) {
 
-        left_Id = left->GetID();
+        SymbolTable* curr = new SymbolTable;
+        curr = localScope;
 
-        left_Decl = localScope->CheckDecl(left_Id->GetName());
-
-        if (left_Decl == NULL) {
-            retType = Type::errorType;
-            ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
-        }
+        Type* n = NULL;
+        if (left->GetID() != NULL) {
+            while(curr != NULL){
+                Decl* d = curr->CheckDecl(left->GetID()->GetName());
+                if(d != NULL){
+                     n = d->GetType();
+                }
+                curr = curr->GetParentTable();
+            }
+        }// so change the else stmt?kk yup
+        //If left-GetID() == NULL then it means that it may be an expr without an ID
+        //So it could actually be of type int or double etc.
+        else {
+            //what would be written here? You want to get the Type here right? Right
+            Type* t = left->GetType();
+        } //what do we do with it now//Not sure if this is how let me think for a sec Take your time!
+        // I just ran the code as it is now, still same stuff//Do you know which expr's return null?//Now that i think about it something isn't returning properly, it should never be null
+        // I think that any expr that deals with classes has to deal with nullType //line ~100 // Can you see the scrolling or is that local?
     }
     else {
-        VarDecl* var = dynamic_cast<VarDecl *>(left_Decl);
+        VarDecl* var = dynamic_cast<VarDecl *>(localScope->CheckDecl(left->GetID()->GetName()));
         t_Left = var->GetType();
     }
 
-    Identifier* right_Id = NULL;
-    Decl* right_Decl = NULL;
-
     if (t_Right == NULL && right != NULL) {
 
-        right_Id = right->GetID();
+       SymbolTable* curr = new SymbolTable;
+        curr = localScope;
 
-        right_Decl = localScope->CheckDecl(right_Id->GetName());
-
-        if (left_Decl == NULL) {
-            retType = Type::errorType;
-            ReportError::IdentifierNotDeclared(right_Id, LookingForVariable);
+        Type* n = NULL;
+        if (right->GetID() != NULL) {
+            while(curr != NULL){
+                Decl* d = curr->CheckDecl(right->GetID()->GetName());
+                if(d != NULL){
+                     n = d->GetType();
+                }
+                curr = curr->GetParentTable();
+            }
+        }
+        else {
+            ReportError::IdentifierNotDeclared(right->GetID(), LookingForVariable);
         }
     }
     else {
-        VarDecl* var = dynamic_cast<VarDecl *>(right_Decl);
+        VarDecl* var = dynamic_cast<VarDecl *>(localScope->CheckDecl(right->GetID()->GetName()));
         t_Left = var->GetType();
     }
 
     if (left == NULL) {
-        if (t_Right == Type::doubleType || t_Right == Type::intType)
-        {
-            retType = t_Right;
-        }
-        else
+        if (t_Right != Type::doubleType || t_Right != Type::intType)
         {
             ReportError::IncompatibleOperand(op, t_Right);
-            retType = Type::errorType;
         }
-        return;
+    return;
     }
 
     if (t_Left->IsEquivalentTo(t_Right)) {
 
         if (t_Left == Type::errorType || t_Right == Type::errorType)
-            retType = Type::errorType;
+            ;
         else if (t_Left == Type::intType || t_Left == Type::doubleType)
-            retType = t_Left;
+            ;
         else {
-            retType = Type::errorType;
+
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
         }
     }
     else {
-        retType = Type::errorType;
         ReportError::IncompatibleOperands(op, t_Left, t_Right);
     }
 }
+
 
 void RelationalExpr::Check() {
 
@@ -219,17 +233,18 @@ void RelationalExpr::Check() {
     Type* t_Left = left->GetType();
     Type* t_Right = right->GetType();
 
-    Identifier* left_Id = NULL;
-    Decl* left_Decl = NULL;
+    Identifier* left_Id;
+    Decl* left_Decl;
 
     if (t_Left == NULL && left != NULL) {
 
         left_Id = left->GetID();
 
+        Assert(left_Id != NULL);
+
         left_Decl = localScope->CheckDecl(left_Id->GetName());
 
         if (left_Decl == NULL) {
-            retType = Type::errorType;
             ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
         }
     }
@@ -241,17 +256,32 @@ void RelationalExpr::Check() {
     if (t_Left->IsEquivalentTo(t_Right)) {
 
         if (t_Left == Type::nullType || t_Right == Type::nullType)
-            retType = Type::errorType;
+            ;
         else if (t_Left == Type::intType || t_Left == Type::doubleType)
-            retType = Type::boolType;
+            ;
         else {
-            retType = Type::errorType;
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
         }
     }
     else {
-        retType = Type::errorType;
         ReportError::IncompatibleOperands(op, t_Left, t_Right);
+    }
+}
+
+Type* RelationalExpr::GetType() {
+    cout << "here" <<  endl;
+    if(left == NULL){
+        return right->GetType();
+    }
+    Type* t_left = left->GetType();
+    Type* t_right = right->GetType();
+
+    if(t_left->IsEquivalentTo(t_right)){
+        return t_left;
+    }
+    else{
+        //Error
+        return NULL;
     }
 }
 
@@ -284,6 +314,22 @@ void LogicalExpr::Check() {
     }
 }
 
+Type* LogicalExpr::GetType() {
+    if(left == NULL){
+        return right->GetType();
+    }
+    Type* t_left = left->GetType();
+    Type* t_right = right->GetType();
+    Assert(t_left != NULL && t_right != NULL);
+    if(t_left->GetTypeName() == t_right->GetTypeName()){
+        return t_left;
+    }
+    else{
+        //Error
+        return NULL;
+    }
+}
+
 void EqualityExpr::Check() {
     left->Check();
     right->Check();
@@ -296,8 +342,6 @@ void EqualityExpr::Check() {
         NamedType* t_Left_Named = dynamic_cast<NamedType *>(t_Left);
         if (t_Left_Named == NULL)
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
-
-        retType = Type::boolType;
         return;
     }
 
@@ -308,7 +352,6 @@ void EqualityExpr::Check() {
         Decl *d_Left = localScope->CheckDecl(left_Id->GetName());
 
         if (d_Left == NULL) {
-            retType = Type::errorType;
             ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
         }
         else {
@@ -319,10 +362,9 @@ void EqualityExpr::Check() {
 
     if (t_Left == Type::voidType || t_Right == Type::voidType) {
         ReportError::IncompatibleOperands(op, t_Left, t_Right);
-        retType = Type::errorType;
     }
     else if (t_Left->IsEquivalentTo(t_Right))
-        retType = Type::boolType;
+        ;
     else {
 
         NamedType* nt_Left = dynamic_cast<NamedType *>(left->GetType());
@@ -337,12 +379,10 @@ void EqualityExpr::Check() {
         for (int i = 0; n != NULL; i++) {
 
             if (n->IsEquivalentTo(nt_Right)) {
-                retType = Type::boolType;
                 return;
             }
             else {
                 ReportError::IncompatibleOperands(op, t_Left, t_Right);
-                retType = Type::errorType;
                 return;
             }
 
@@ -352,16 +392,47 @@ void EqualityExpr::Check() {
     }
 }
 
+Type* EqualityExpr::GetType() {
+    if(left == NULL){
+        return right->GetType();
+    }
+    Type* t_left = left->GetType();
+    Type* t_right = right->GetType();
+
+    if(t_left->GetTypeName() == t_right->GetTypeName()){
+        return Type::boolType;
+    }
+    else{
+        //Error
+        return NULL;
+    }
+}
+
 void AssignExpr::Check(){
+    /**
     left->Check();
-    right->Check();
+    right->Check();**/
+}
+
+Type* AssignExpr::GetType() {
+    if(left == NULL){
+        return right->GetType();
+    }
+    Type* t_left = left->GetType();
+    Type* t_right = right->GetType();
+
+    if(t_left->GetTypeName() == t_right->GetTypeName()){
+        return t_left;
+    }
+    else{
+        //Error
+        return NULL;
+    }
 }
 
 void AssignExpr::BuildScope(SymbolTable* s){
     left->BuildScope(s);
     right->BuildScope(s);
-
-
 }
 
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
@@ -390,7 +461,7 @@ Type* FieldAccess::GetType(){
     SymbolTable* current = new SymbolTable();
     current = localScope;
     while(current != NULL){
-        Decl* d = localScope->CheckDecl(field->GetName());
+        Decl* d = current->CheckDecl(field->GetName());
         if(d != NULL){
             return d->GetType();
         }
@@ -492,6 +563,10 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     if (base) base->SetParent(this);
     (field=f)->SetParent(this);
     (actuals=a)->SetParentAll(this);
+}
+
+Type* Call::GetType(){
+
 }
 
  void Call::PrintChildren(int indentLevel) {
