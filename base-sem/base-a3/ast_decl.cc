@@ -62,10 +62,13 @@ void ClassDecl::BuildScope(SymbolTable* s){
         Decl* curr = members->Nth(i);
         Decl* n = localScope->CheckDecl(curr);
         bool overwrite = false;
+
         if(n != NULL){
             ReportError::DeclConflict(curr, n);
             return;
         }
+
+        cout << curr->GetDeclName() << endl;
         localScope->AddDecl(curr, overwrite);
     }
 
@@ -75,6 +78,7 @@ void ClassDecl::BuildScope(SymbolTable* s){
             if(n != NULL){
                 found = true;
                 extendedScope = n;
+
                 if(n->GetScope() == NULL){
                     ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass);
                     extends = NULL;
@@ -183,19 +187,23 @@ bool ClassDecl::CheckOverriding(int i, Decl* extendC, SymbolTable* parentT){
     //extendC = parentT->CheckDecl(extends);
     bool found = false;
 
+    //Get ith member
     Decl* member = members->Nth(i);
+    //Check to see if this member is in the extended scope
     Decl* memberEx = extendC->GetScope()->CheckDecl(member);
+
+    //If the member is VarDecl
     if(member->GetFormals() == NULL){
-        if(memberEx != NULL){
+        if(memberEx != NULL){ //We have a dulpicate
             ReportError::OverrideVarError(member, extendC);
         }
-        else{
+        else{ //We don't have a duplicate in the next class
             Decl* extendNext = extendC->GetExtendScope();
-            if(extendNext != NULL){
+            if(extendNext != NULL){ //If there are more extensions to check
                 return CheckOverriding(i, extendNext, parentT);
             }
             else{
-                ReportError::OverrideVarError(member, extendC);
+                return true;
             }
         }
         return false;

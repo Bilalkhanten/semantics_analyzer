@@ -35,15 +35,16 @@ class Decl : public Node
     Decl() : id(NULL) {}
     Decl(Identifier *name);
     bool IsCompatible(Type* compatee, SymbolTable* s);
+
+    virtual Type* GetType() { return NULL; }
     virtual Decl* GetExtendScope() { return NULL; }
     virtual List<Decl*>* GetImplementScope() { return NULL; }
     virtual bool isInterface() { return false; }
     virtual List<VarDecl*>* GetFormals() { return NULL; }
     virtual List<Decl*>* GetMembers() { return NULL; }
-    virtual SymbolTable* GetScope() { return NULL; }
+    virtual SymbolTable* GetScope() { cout << "thisd;h;ln;oin34121 " <<endl; return NULL; }
     virtual Identifier* GetID() { return id; }
     virtual List<Type*>* GetTypes() { return types; }
-    virtual Type* GetType() { return NULL; }
     virtual const char* GetDeclName() { return id->GetName(); }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
@@ -79,7 +80,7 @@ class ClassDecl : public Decl
     void BuildScope(SymbolTable* s);
     void Check();
     List<Decl*>* GetMembers() { return members; }
-    SymbolTable* GetScope() { return this->localScope; }
+    SymbolTable* GetScope() { cout << "thisd;h;ln;oin 1-980980192" <<endl; return this->localScope; }
     Decl* GetExtendScope() { return extendedScope; }
     List<Decl*>* GetImplementScope() { return implementedScope; }
     bool CheckOverriding(int i, Decl* extendC, SymbolTable* parentT);
@@ -122,9 +123,11 @@ class FnDecl : public Decl
     FnDecl() : Decl(), formals(NULL), returnType(NULL), body(NULL) {}
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
-    List<VarDecl*>* GetFormals() { return formals; }
-    void BuildScope(SymbolTable* s);
+
     Type* GetType() { return returnType; }
+    List<VarDecl*>* GetFormals() { return formals; }
+    SymbolTable* GetScope() { return formalsTable; }
+    void BuildScope(SymbolTable* s);
     void Check();
     const char* GetDeclName() { return id->GetName(); }
     const char *GetPrintNameForNode() { return "FnDecl"; }

@@ -430,12 +430,16 @@ void AssignExpr::Check(){
 }
 
 Type* AssignExpr::GetType() {
+    Assert(left != NULL && right != NULL);
+    cout << "here easg" << endl;
     if(left == NULL){
         return right->GetType();
     }
     Type* t_left = left->GetType();
     Type* t_right = right->GetType();
+    Assert(t_left != NULL && t_right != NULL);
     if(strcmp(t_left->GetTypeName(), t_right->GetTypeName()) == 0){
+        cout << "here easg" << endl;
         return t_left;
     }
     else{
@@ -715,7 +719,7 @@ void Call::Check() {
         Type* classType = base->GetType();
         current = localScope;
         bool found = false;
-
+        cout << "kuaegliugweluogt; w/" << endl;
         if(classType->isArray()){
             const char* libraryFunc = "length";
 
@@ -734,6 +738,8 @@ void Call::Check() {
             return;
         }
         else{
+            cout << "kkhgjhgjeer" << endl;
+            cout << "kuaegliugweluogt; w/" << endl;
             Decl* d;
             found = false;
             SymbolTable* classT;
@@ -745,6 +751,7 @@ void Call::Check() {
                 }
                 current = current->GetParentTable();
             }
+            cout << "kuaegliugweluogt; w/" << endl;
             if(classT != NULL && base->isThis()){
                 d = classT->CheckDecl(classType->GetTypeName());
                 if(d == NULL){
@@ -754,8 +761,12 @@ void Call::Check() {
                 returnType = d->GetType();
                 return;
             }
-
+            cout << "kuaegliugweluogt; w/" << endl;
             SymbolTable* parentT = new SymbolTable();
+            while(current != NULL){
+                parentT = current;
+                current = current->GetParentTable();
+            }
             current = localScope;
             found = false;
             while(current != NULL && !found){
@@ -763,24 +774,45 @@ void Call::Check() {
                 if(d != NULL){
                     found = true;
                 }
-                parentT = current;
                 current = current->GetParentTable();
             }
             if(!found){
                 ReportError::IdentifierNotDeclared(new Identifier(*this->location, classType->GetTypeName()), LookingForClass);
                 return;
             }
-
+            cout << "kuaegliugweluogt; w/" << endl;
+            //cout << parentT->GetName() << " 2308718 " <<endl;
             Decl* func = parentT->CheckDecl(classType->GetTypeName());
             if(func != NULL){
                 found = false;
                 Decl* ext = func->GetExtendScope();
+                cout << "kuaegliugweluogt; w/" << endl;
                 if(ext == NULL){
-                     if(func->GetScope()->CheckDecl(field->GetName())){
-                        returnType = func->GetType();
+                     cout << "kuaegliugweluogt; w/" <<endl;
+                     Iterator<Decl*> it = func->GetScope()->getHashTablePointer()->GetIterator();
+                     Decl* d = it.GetNextValue();
+                     cout << d->GetDeclName() <<endl;
+
+                     while(d != NULL){
+                        d = it.GetNextValue();
+                        if(d != NULL){
+                        cout << d->GetDeclName() <<endl;
+                        }
+                     }
+
+                    cout << field->GetName() << endl;
+                    if(func->GetScope()->CheckDecl(field->GetName())){
+                        Decl* t = func->GetScope()->CheckDecl(field->GetName());
+                        cout << "kuaegliugweluogt; w/1092498127409 " << t->GetDeclName() << endl;
+                        returnType = t->GetType();
+                        Assert(t->GetType() != NULL);
+                        cout << "herherere" << endl;
+                        Assert(returnType!=NULL);
+                        cout << returnType->GetTypeName() << endl;
                         return;
                      }
                      else{
+                        cout << "kuaegliugweluogt; w/1-92901270847128" << endl;
                         List<Decl*>* implement = func->GetImplementScope();
                         if(implement != NULL){
                             for(int i = 0; i < implement->NumElements(); i++){
