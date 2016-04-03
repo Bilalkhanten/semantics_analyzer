@@ -23,4 +23,6 @@ int main() {
 	a = new Poodle;
 	b = new Poodle;
 	c = new Poodle;
+
+	b.eat(); 
 }

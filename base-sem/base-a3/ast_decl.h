@@ -102,6 +102,7 @@ class InterfaceDecl : public Decl
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
     const char *GetPrintNameForNode() { return "InterfaceDecl"; }
+    SymbolTable* GetScope() { return this->scopeTable; }
     void BuildScope(SymbolTable* s);
     void Check();
     bool isInterface() { return true; }

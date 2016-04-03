@@ -459,6 +459,7 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
 Type* ArrayAccess::GetType(){
     Expr* e = base;
     numberOfAccess = 0;
+
     while(e != NULL){
         numberOfAccess++;
         e = e->GetBase();
@@ -633,14 +634,13 @@ void Call::Check() {
         actuals->Nth(i)->Check();
     }
     Decl* decl = NULL;
-
     if (base) {
         SymbolTable* current = new SymbolTable();
-        Type* t = base->GetType();
+        Type* classType = base->GetType();
         current = localScope;
         bool found = false;
 
-        if(t->isArray()){
+        if(classType->isArray()){
             const char* libraryFunc = "length";
 
             if(strcmp(field->GetName(), libraryFunc) != 0){
@@ -653,32 +653,129 @@ void Call::Check() {
 
             return;
         }
-        else if(!(t->isNamedType())){
+        else if(!(classType->isNamedType())){
             ReportError::NonNamedTypeFunc(this, base->GetType());
             return;
         }
         else{
             Decl* d;
             found = false;
+            SymbolTable* classT;
+            SymbolTable* extended;
 
+            while(current->GetParentTable() != NULL){
+                if(current->GetClassDecl() != NULL){
+                    classT = current;
+                }
+                current = current->GetParentTable();
+            }
+            if(classT != NULL && base->isThis()){
+                d = classT->CheckDecl(classType->GetTypeName());
+                if(d == NULL){
+                    ReportError::FieldNotFoundInBase(new Identifier(*this->location, classType->GetTypeName()), classType);
+                    return;
+                }
+                return;
+            }
+
+            SymbolTable* parentT = new SymbolTable();
+            current = localScope;
+            found = false;
             while(current != NULL && !found){
-                d = current->CheckDecl(t->GetTypeName());
+                d = current->CheckDecl(classType->GetTypeName());
                 if(d != NULL){
                     found = true;
                 }
+                parentT = current;
+                current = current->GetParentTable();
             }
             if(!found){
-                ReportError::IdentifierNotDeclared(new Identifier(*this->location, t->GetTypeName()), LookingForClass);
+                ReportError::IdentifierNotDeclared(new Identifier(*this->location, classType->GetTypeName()), LookingForClass);
                 return;
             }
 
-            Decl* t = d->GetScope()->CheckDecl(d->GetDeclName());
-            if(t == NULL){
+            Decl* func = parentT->CheckDecl(classType->GetTypeName());
+            if(func != NULL){
+                found = false;
+                Decl* ext = func->GetExtendScope();
+                if(ext == NULL){
+                     if(func->GetScope()->CheckDecl(field->GetName())){
+                        return;
+                     }
+                     else{
+                        List<Decl*>* implement = func->GetImplementScope();
+                        if(implement != NULL){
+                            for(int i = 0; i < implement->NumElements(); i++){
+                                SymbolTable* s = implement->Nth(i)->GetScope();
+                                Decl* funct = s->CheckDecl(field->GetName());
+                                if(funct != NULL){
+                                    List<VarDecl*>* vDecl = func->GetFormals();
+                                    for(int i = 0; i < actuals->NumElements(); i++){
+                                        Type* actualsT = actuals->Nth(i)->GetType();
+                                        Type* varDeclT = vDecl->Nth(i)->GetType();
+                                        if(strcmp(actualsT->GetTypeName(), varDeclT->GetTypeName()) != 0){
+                                            if(actualsT->isNamedType() && varDeclT->isNamedType()){
+                                                if(actuals->Nth(i)->GetType()->IsCompatible(varDeclT->GetType(), localScope)){
+                                                    return;
+                                                }
+                                                ReportError::NotCompatible(vDecl->Nth(i), actualsT);
+                                                return;
+                                            }
+                                            ReportError::ArgMismatch(this, i, actualsT, varDeclT);
+                                            return;
+                                        }
+                                    }
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    ReportError::FieldNotFoundInBase(new Identifier(*this->location, field->GetName()), classType);
+                    return;
+                }// ext != NULL
+                Assert(ext != NULL);
+                extended = ext->GetScope();
 
+                while(extended != NULL && !found){
+                    func = extended->GetClassDecl()->GetScope()->CheckDecl(field->GetName());
+                    if(func != NULL){
+                        found = true;
+                    }
+                    Decl* temp = extended->GetClassDecl()->GetExtendScope();
+                    if(temp){
+                         extended = temp->GetScope();
+                    }
+                    else{
+                        extended = NULL;
+                    }
+                }
+                if(!found){
+                    ReportError::FieldNotFoundInBase(new Identifier(*this->location, field->GetName()), classType);
+                    return;
+                }
             }
             else{
+                //Error no class
                 return;
             }
+
+            List<VarDecl*>* vDecl = func->GetFormals();
+            for(int i = 0; i < actuals->NumElements(); i++){
+                Type* actualsT = actuals->Nth(i)->GetType();
+                Type* varDeclT = vDecl->Nth(i)->GetType();
+                if(strcmp(actualsT->GetTypeName(), varDeclT->GetTypeName()) != 0){
+                    if(actualsT->isNamedType() && varDeclT->isNamedType()){
+                        if(actuals->Nth(i)->GetType()->IsCompatible(varDeclT->GetType(), localScope)){
+                            return;
+                        }
+                        ReportError::NotCompatible(vDecl->Nth(i), actualsT);
+                        return;
+                    }
+                    ReportError::ArgMismatch(this, i, actualsT, varDeclT);
+                    return;
+                }
+            }
+            return;
         }
     }
     else {
@@ -711,8 +808,10 @@ void Call::Check() {
                     if(strcmp(actualsT->GetTypeName(), varDeclT->GetTypeName()) != 0){
                         if(actualsT->isNamedType() && varDeclT->isNamedType()){
                             if(actuals->Nth(i)->GetType()->IsCompatible(varDeclT->GetType(), localScope)){
-
+                                return;
                             }
+                            ReportError::NotCompatible(vDecl->Nth(i), varDeclT);
+                            return;
                         }
                         ReportError::ArgMismatch(this, i, actualsT, varDeclT);
                         return;
