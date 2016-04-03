@@ -7,8 +7,22 @@ class Dog extends Animal{
 }
 
 class Poodle extends Dog{
-	string name;	
 
 	int temp(){
 	}
 }
+
+class A{
+	string tempo(){
+	}
+}
+
+class B extends A{
+	string temp(){
+	}
+}
+
+class C extends B{
+	string tempo(int a){}
+}
+

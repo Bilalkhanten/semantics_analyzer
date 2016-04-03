@@ -171,19 +171,6 @@ void ClassDecl::Check(){
 
         for(int i = 0; i < members->NumElements(); i++){
             found = CheckOverriding(i, extendC, parentT); //Add to get a recursive call to extend classes
-            if(!found){
-                //Check next scope
-                Decl* extendNext = extendC->GetExtendScope();
-                if(extendNext != NULL){
-
-                }
-            }
-        }
-        if(!found){
-            Decl* extendNext = extendC->GetExtendScope();
-            if(extendNext != NULL){
-
-            }
         }
     }
 
@@ -325,6 +312,32 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
 }
 
 void FnDecl::Check(){
+    Type* rt = returnType;
+    const char* rtName = rt->GetTypeName();
+    bool found = false;
+
+    if(rtName != Type::intType->GetTypeName() &&
+       rtName != Type::doubleType->GetTypeName() &&
+       rtName != Type::boolType->GetTypeName() &&
+       rtName != Type::stringType->GetTypeName() &&
+       rtName != Type::voidType->GetTypeName()){
+        SymbolTable* current = new SymbolTable();
+        current = formalsTable->GetParentTable();
+        Decl* d = NULL;
+
+        while(current != NULL){
+            Decl* d = current->CheckDecl(rtName);
+            if(d != NULL){
+                found = true;
+                break;
+            }
+            current = current->GetParentTable();
+        }
+        if(!found){
+            ReportError::IdentifierNotDeclared(new Identifier(*this->location, rtName), LookingForClass);
+        }
+    }
+
     if(body != NULL){
         Assert(body!=NULL);
         body->Check();
