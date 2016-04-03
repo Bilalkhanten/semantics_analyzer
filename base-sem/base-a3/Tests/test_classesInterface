@@ -1,0 +1,52 @@
+interface y {
+    void doSomething();
+    void doSomethingElse();
+}
+class yx implements y {
+    void dI() {}
+    void doSomething() {}
+    void doSomethingElse() {}
+}
+class yxz extends yx {
+    int Integer;
+    double Double;
+    void setThings(int i, double d) {
+        this.Integer = i;
+        Double = d;
+    }
+    void doSomething() {}
+    void doSomethingElse(){}
+}
+class wxyz extends yxz {
+    void doSomething(){}
+    void doSomethingElse(){}
+}
+class a extends wxyz {
+    void doSomething(){}
+    void doSomethingElse(){}
+}
+class ab extends a {
+    void doSomething(){}
+    void doSomethingElse(){}
+}
+class abc extends ab {
+    void doSomething(){}
+    void doSomethingElse(){}
+}
+class abcd extends abc {
+    void doSomething()
+    {
+        Print("Hello!");
+    }
+    void doSomethingElse()
+    {
+        Print("Hey");
+    }
+}
+int main() {
+    abcd Class;
+    int x;
+    Class = new abcd;
+    x = ((1346 + 3145) / (5 * 9000)) + 5;
+    Print(x);
+}

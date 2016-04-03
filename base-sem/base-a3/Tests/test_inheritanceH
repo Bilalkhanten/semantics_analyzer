@@ -1,0 +1,24 @@
+interface a {}
+interface b { int ret5(); }
+interface c {}
+interface d {}
+interface e { int ret10(); }
+interface f { int ret5(); }
+interface g {}
+class z implements a, b, c, d, e, f, g {
+    int ret6() {
+        return 6;
+    }
+    int ret5() {
+        return 5;
+    }
+    int ret10() {
+        return 10;
+    }
+}
+int main() {
+    int var;
+    z Class;
+    Class = new z;
+    var = Class.ret10();
+}

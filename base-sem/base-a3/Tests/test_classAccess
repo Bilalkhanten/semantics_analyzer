@@ -1,0 +1,26 @@
+interface Animal { void eat(); }
+
+class Dog {
+	string b;
+	
+	void Bark(){}
+
+	void Doggy(Dog a){
+		a.b = "temp";
+	}	
+}
+
+class Poodle extends Dog{
+	void Dog(Dog a){
+		a.b = "temper";
+		a.Bark();
+	}
+}
+
+class Poodly implements Animal{
+	void eat(){}
+
+	void Dogger(Dog a){
+		a.b = "string";
+	}
+}
