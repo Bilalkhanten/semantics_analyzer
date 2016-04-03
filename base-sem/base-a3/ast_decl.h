@@ -36,13 +36,13 @@ class Decl : public Node
     Decl(Identifier *name);
     bool IsCompatible(Type* compatee, SymbolTable* s);
 
+    virtual List<Decl*>* GetMembers() { return NULL; }
     virtual Type* GetType() { return NULL; }
     virtual Decl* GetExtendScope() { return NULL; }
     virtual List<Decl*>* GetImplementScope() { return NULL; }
     virtual bool isInterface() { return false; }
     virtual List<VarDecl*>* GetFormals() { return NULL; }
-    virtual List<Decl*>* GetMembers() { return NULL; }
-    virtual SymbolTable* GetScope() { cout << "thisd;h;ln;oin34121 " <<endl; return NULL; }
+    virtual SymbolTable* GetScope() { return NULL; }
     virtual Identifier* GetID() { return id; }
     virtual List<Type*>* GetTypes() { return types; }
     virtual const char* GetDeclName() { return id->GetName(); }
@@ -80,7 +80,7 @@ class ClassDecl : public Decl
     void BuildScope(SymbolTable* s);
     void Check();
     List<Decl*>* GetMembers() { return members; }
-    SymbolTable* GetScope() { cout << "thisd;h;ln;oin 1-980980192" <<endl; return this->localScope; }
+    SymbolTable* GetScope() { return this->localScope; }
     Decl* GetExtendScope() { return extendedScope; }
     List<Decl*>* GetImplementScope() { return implementedScope; }
     bool CheckOverriding(int i, Decl* extendC, SymbolTable* parentT);

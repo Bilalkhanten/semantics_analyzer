@@ -68,7 +68,6 @@ void ClassDecl::BuildScope(SymbolTable* s){
             return;
         }
 
-        cout << curr->GetDeclName() << endl;
         localScope->AddDecl(curr, overwrite);
     }
 
@@ -105,9 +104,9 @@ void ClassDecl::BuildScope(SymbolTable* s){
         found = false;
         Decl* n;
         int count = implements->NumElements();
-
         for (int i = 0; i <implements->NumElements(); i++){
             current = s;
+            found = false;
             while(current != NULL && !found){
                 n = current->CheckDecl(implements->Nth(i));
                 if(n != NULL){
@@ -136,27 +135,29 @@ void ClassDecl::BuildScope(SymbolTable* s){
 
 void ClassDecl::Check(){
     if(implements){
+        InterfaceDecl* interfaceD;
         for(int i = 0; i < implementedScope->NumElements(); i++){
-            Decl* interfaceD = implementedScope->Nth(i);
+            interfaceD = dynamic_cast<InterfaceDecl*>(implementedScope->Nth(i));
             List<Decl*>* listD = interfaceD->GetMembers();
             List<VarDecl*>* classVars = new List<VarDecl*>();
             List<VarDecl*>* interVars = new List<VarDecl*>();
-
-            for(int i = 0; i < listD->NumElements(); i++){
-                Decl* declInt = listD->Nth(i);
-                Decl* classDecl = localScope->CheckDecl(declInt);
+            Decl* declInt;
+            Decl* classDecl;
+            for(int j = 0; j < listD->NumElements(); j++){
+                declInt = listD->Nth(j);
+                classDecl = localScope->CheckDecl(declInt);
                 if(classDecl != NULL){
                     classVars = classDecl->GetFormals();
                     interVars = declInt->GetFormals();
 
                     if(classVars->NumElements() != interVars->NumElements()){
-                        ReportError::InterfaceNotImplemented(this, implements->Nth(i));
+                        ReportError::InterfaceNotImplemented(this, implements->Nth(j));
                         continue;
                     }
 
-                    for(int i = 0; i < classVars->NumElements(); i++){
-                        if(classVars->Nth(i)->GetType() != interVars->Nth(i)->GetType()){
-                            ReportError::InterfaceNotImplemented(this, implements->Nth(i));
+                    for(int k = 0; k < classVars->NumElements(); k++){
+                        if(classVars->Nth(k)->GetType() != interVars->Nth(k)->GetType()){
+                            ReportError::InterfaceNotImplemented(this, implements->Nth(k));
                             break;
                         }
                     }
@@ -256,7 +257,6 @@ void InterfaceDecl::PrintChildren(int indentLevel) {
 void InterfaceDecl::BuildScope(SymbolTable* s){
     scopeTable = new SymbolTable();
     scopeTable->SetParentTable(s);
-
     for (int i = 0; i < members->NumElements(); i++){
         Decl* d = members->Nth(i);
         Decl* n = scopeTable->CheckDecl(d->GetDeclName());
