@@ -483,13 +483,47 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 
 Type* FieldAccess::GetType(){
     SymbolTable* current = new SymbolTable();
+    SymbolTable* parentT = new SymbolTable();
     current = localScope;
+
     while(current != NULL){
         Decl* d = current->CheckDecl(field->GetName());
         if(d != NULL){
             return d->GetType();
         }
+        parentT = current;
         current = current->GetParentTable();
+    }
+
+    if(base){
+        Type* classType = base->GetType();
+        current = localScope;
+
+        Decl* classD = parentT->CheckDecl(classType->GetTypeName());
+        if(classD != NULL){
+            bool found = false;
+            Decl* decl = classD->GetScope()->CheckDecl(field->GetName());
+            if(decl != NULL){
+                return decl->GetType();
+            }
+
+            Decl* ext = classD->GetExtendScope();
+            Decl* ex;
+
+            while(ext != NULL && !found){
+                ex = ext->GetScope()->CheckDecl(field->GetName());
+                if(ex != NULL){
+                    return ex->GetType();
+                    found = true;
+                }
+                ext = ext->GetExtendScope();
+            }
+            if(!found){
+                ReportError::IdentifierNotDeclared(field, LookingForVariable);
+                return Type::errorType;
+            }
+            return ex->GetType();
+        }
     }
     //Error: Did not find the declaration.
     return Type::errorType;
@@ -512,6 +546,53 @@ void FieldAccess::Check(){
     bool found = false;
 
     if(base){
+        if(!base->isThis()){
+            Type* classType = base->GetType();
+            SymbolTable* classT = new SymbolTable();
+            classT = current;
+            while(current->GetParentTable() != NULL){
+
+                classT = current;
+                current = current->GetParentTable();
+            }
+            Decl* cDecl = classT->GetClassDecl();
+            Assert(cDecl != NULL);
+            if(strcmp(classType->GetTypeName(), cDecl->GetDeclName()) != 0){
+                Decl* d = cDecl->GetScope()->CheckDecl(field->GetName());
+
+                if(d != NULL){
+                    return;
+                }
+                else{
+                    Decl* ext = cDecl->GetExtendScope();
+                    //cout << "lkgliugIUNULL" << endl;
+                    if(ext == NULL){
+                        //cout << "lkgliugIUNULL" << endl;
+                        ReportError::IdentifierNotDeclared(field, LookingForVariable);
+                        return;
+                    }
+                    else{
+                        bool found  =  false;
+
+                        while(ext != NULL && !found){
+                            Decl* ex = ext->GetScope()->CheckDecl(field->GetName());
+                            if(ex != NULL){
+                                found = true;
+                            }
+                            ext = ext->GetExtendScope();
+                        }
+                        if(!found){
+                             ReportError::IdentifierNotDeclared(field, LookingForVariable);
+                            return;
+                        }
+                        return;
+                    }
+                }
+            }//end if
+            else{
+                return;
+            }
+        }
         //Get top level class declarations
         SymbolTable* parentT = new SymbolTable();
         SymbolTable* classT = new SymbolTable();
@@ -550,10 +631,6 @@ void FieldAccess::Check(){
             Decl* extends = c->GetExtendScope();
             Decl* temp = extends->GetScope()->CheckDecl(field->GetName());
 
-
-            /**
-            Check extends here. Remove implement check.
-            **/
             found = true;
             while(extends != NULL && !found){
                 Decl* temp = extends->GetScope()->CheckDecl(field->GetName());
@@ -566,7 +643,6 @@ void FieldAccess::Check(){
 
             ReportError::FieldNotFoundInBase(field, Type::errorType);
             return;
-            //ReportError::IdentifierNotDeclared(field, LookingForVariable);
         }
         else{
             return;
@@ -650,7 +726,7 @@ void Call::Check() {
             if(actuals->NumElements() != 0){
                 ReportError::NumArgsMismatch(field, 0, actuals->NumElements());
             }
-
+            returnType = classType;
             return;
         }
         else if(!(classType->isNamedType())){
@@ -718,7 +794,7 @@ void Call::Check() {
                                         if(strcmp(actualsT->GetTypeName(), varDeclT->GetTypeName()) != 0){
                                             if(actualsT->isNamedType() && varDeclT->isNamedType()){
                                                 if(actuals->Nth(i)->GetType()->IsCompatible(varDeclT->GetType(), localScope)){
-                                                    return;
+                                                    continue;
                                                 }
                                                 ReportError::NotCompatible(vDecl->Nth(i), actualsT);
                                                 return;
@@ -812,7 +888,7 @@ void Call::Check() {
                     if(strcmp(actualsT->GetTypeName(), varDeclT->GetTypeName()) != 0){
                         if(actualsT->isNamedType() && varDeclT->isNamedType()){
                             if(actuals->Nth(i)->GetType()->IsCompatible(varDeclT->GetType(), localScope)){
-                                return;
+                                continue;
                             }
                             ReportError::NotCompatible(vDecl->Nth(i), varDeclT);
                             return;

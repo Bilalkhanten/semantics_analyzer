@@ -25,6 +25,7 @@ class Expr : public Stmt
     Expr() : Stmt() {}
     void BuildScope(SymbolTable* s) { Assert(s != NULL); localScope = new SymbolTable(); localScope = s;}
     bool IsCompatible(Expr* other, SymbolTable* s);
+
     virtual bool isThis() { return false; }
 
     virtual int GetNumOfAccess() { return 0; }
