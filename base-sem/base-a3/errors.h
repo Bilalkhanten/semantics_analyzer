@@ -89,6 +89,8 @@ class ReportError {
   static void NumArgsMismatch(Identifier *fnIdentifier, int numExpected, int numGiven);
   static void ArgMismatch(Expr *arg, int argIndex, Type *given, Type *expected);
   static void PrintArgMismatch(Expr *arg, int argIndex, Type *given);
+  static void ArrFuncMismatch(Expr* arg, const char* c);
+  static void NonNamedTypeFunc(Expr* arg, Type* t);
 
 
   // Errors used by semantic analyzer for field access

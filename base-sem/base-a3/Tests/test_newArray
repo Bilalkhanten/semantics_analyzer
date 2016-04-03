@@ -1,8 +1,10 @@
 int main(){
 	int[] x;
 	int y;
+	int[][] d;
 
 	x = NewArray(y, int);
 	x = NewArray((1+1), int);
 	x = NewArray((1.0), double);
+	d[0] = NewArray(1, int);
 }

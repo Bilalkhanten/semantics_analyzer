@@ -9,11 +9,13 @@ int main(){
 	Dog[] f;
 	int[] g;
 
-	a[0][1] = "string";
-	e = f;
-
-	a[0] = g;
-	a[0][0] = g;
-	a = g;
-	a[0][0] = 1;
+	a[0][1] = "string";//Error
+	e = f;//Error
+	
+	
+	a[0] = g;//No Error
+	a[0][0] = g;//Error
+	a = g;//Error
+	a[0][0] = 1;//No Error
+	e[0] = new Dog;//Error
 }

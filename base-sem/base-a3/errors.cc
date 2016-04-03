@@ -177,6 +177,18 @@ void ReportError::PrintArgMismatch(Expr *arg, int argIndex, Type *given) {
     OutputError(arg->GetLocation(), s.str());
 }
 
+void ReportError::ArrFuncMismatch(Expr* arg, const char* c){
+    ostringstream s;
+    s << "Unknown function call on an array, only 'length()' is available. Given: " << c;
+    OutputError(arg->GetLocation(), s.str());
+}
+
+void ReportError::NonNamedTypeFunc(Expr* arg, Type* t){
+    ostringstream s;
+    s << "Cannot call function on a primitive type. Given: " << t->GetTypeName();
+    OutputError(arg->GetLocation(), s.str());
+}
+
 void ReportError::TestNotBoolean(Expr *expr) {
     OutputError(expr->GetLocation(), "Test expression must have boolean type");
 }

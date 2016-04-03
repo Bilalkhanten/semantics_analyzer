@@ -5,7 +5,7 @@ class Human {
     bool isMarried;
 
     void Human() {
-        age = 0;
+        //age = 0;
         this.firstName = "Joe";
         height = 179.5;
         isMarried = false;

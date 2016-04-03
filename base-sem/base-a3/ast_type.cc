@@ -29,6 +29,102 @@ Type::Type(const char *n) {
     typeName = strdup(n);
 }
 
+bool Type::IsCompatible(Type* compatee, SymbolTable* locScope){
+    Type* t_left = this;
+    Type* t_compatee = compatee;
+    Assert(t_left != NULL && t_compatee != NULL);
+    if(strcmp(t_left->GetTypeName(), t_compatee->GetTypeName()) == 0){
+        return true;
+    }
+    else{
+        Decl* thisClass;
+        Decl* otherClass;
+        SymbolTable* current = new SymbolTable();
+        SymbolTable* parentT = new SymbolTable();
+        current = locScope;
+        bool found = false;
+        Assert(locScope != NULL);
+
+        while(current != NULL && !found){
+            thisClass = current->CheckDecl(t_left->GetTypeName());
+            if(thisClass != NULL){
+                found = true;
+            }
+            parentT = current;
+            current = current->GetParentTable();
+        }
+        Decl* extends = thisClass->GetExtendScope();
+        if(extends){
+            if(extends->GetDeclName() == t_left->GetTypeName()){
+                return true;
+            }
+            else{
+                found = false;
+                List<Decl*>* implements = thisClass->GetImplementScope();
+                if(implements != NULL){
+                    for(int i = 0; i < implements->NumElements(); i++){
+                        const char* temp = implements->Nth(i)->GetDeclName();
+                        if(strcmp(temp, t_compatee->GetTypeName()) == 0){
+                            found = true;
+                        }
+                    }
+                }
+                current = locScope;
+                while(!found && (extends || (implements->NumElements() > 0))){
+                    if(extends){
+                        if(strcmp(extends->GetDeclName(), t_compatee->GetTypeName()) == 0){
+                            found = true;
+                            return true;
+                        }
+                    }
+
+                    for(int i = 0; i < implements->NumElements(); i++){
+                        const char* temp = implements->Nth(i)->GetDeclName();
+                        if(strcmp(temp, t_compatee->GetTypeName()) == 0){
+                            found = true;
+                            return true;
+                        }
+                    }
+
+                    if(extends){
+                        implements = extends->GetImplementScope();
+                        if(implements == NULL){
+                            implements = new List<Decl*>();
+                        }
+                        extends = extends->GetExtendScope();
+                    }
+                    else{
+                        break;
+                    }
+                }
+                if(!found){
+                    ReportError::NotCompatible(thisClass, t_compatee);
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        found = false;
+        List<Decl*>* implements = thisClass->GetImplementScope();
+        if(implements != NULL){
+            for(int i = 0; i < implements->NumElements(); i++){
+                const char* temp = implements->Nth(i)->GetDeclName();
+                if(strcmp(temp, t_compatee->GetTypeName()) == 0){
+                    found = true;
+                }
+            }
+            if(!found){
+                ReportError::NotCompatible(thisClass, t_compatee);
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+}
+
+
 void Type::PrintChildren(int indentLevel) {
     printf("%s", typeName);
 }
@@ -51,14 +147,22 @@ void ArrayType::PrintChildren(int indentLevel) {
     elemType->Print(indentLevel+1);
 }
 
-const char* ArrayType::GetTypeName(){
+int ArrayType::GetNumberOfDims() {
     Type* t = elemType;
-    this->numberOfDims = 1;
 
-    while(t->isArray()){
-        this->numberOfDims++;
-        t = t->GetType();
+    this->numberOfDims = 0;
+
+    if(t->isArray() || isArray()){
+        numberOfDims = 1;
+        while(t->isArray()){
+            this->numberOfDims++;
+            t = t->GetType();
+        }
     }
-    cout << endl << "number:  " << this->numberOfDims << endl;
+
+    return numberOfDims;
+}
+
+const char* ArrayType::GetTypeName(){
     return elemType->GetTypeName();
 }

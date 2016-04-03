@@ -23,12 +23,15 @@ class Expr : public Stmt
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
-    void BuildScope(SymbolTable* s) { cout << "here" << endl; Assert(s != NULL); localScope = new SymbolTable(); localScope = s;}
-    bool IsCompatible(Expr* other);
-    virtual Expr* GetBase() { return NULL; }
+    void BuildScope(SymbolTable* s) { Assert(s != NULL); localScope = new SymbolTable(); localScope = s;}
+    bool IsCompatible(Expr* other, SymbolTable* s);
+    virtual bool isThis() { return false; }
+
     virtual int GetNumOfAccess() { return 0; }
-    virtual bool isNewArray() { return false; }
+
     virtual bool isArrayAccess() { return false; }
+    virtual bool isNewArray() { return false; }
+    virtual Expr* GetBase() { return NULL; }
     virtual bool isEmpty() { return false; }
     virtual Type* GetType() { return NULL; }
     virtual NamedType* GetNamedType() { return NULL; }
@@ -204,13 +207,14 @@ class LValue : public Expr
 {
   public:
     LValue(yyltype loc) : Expr(loc) {}
-    void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; }
+    //void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; }
 };
 
 class This : public Expr
 {
   public:
     This(yyltype loc) : Expr(loc) {}
+    bool  isThis() { return true; }
     const char *GetPrintNameForNode() { return "This"; }
 };
 
@@ -265,6 +269,8 @@ class Call : public Expr
   public:
     Call() : Expr(), base(NULL), field(NULL), actuals(NULL) {}
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
+    void BuildScope(SymbolTable* s);
+    void Check();
     Type* GetType();
     const char *GetPrintNameForNode() { return "Call"; }
     void PrintChildren(int indentLevel);
@@ -287,6 +293,7 @@ class NewExpr : public Expr
     const char *GetPrintNameForNode() { return "NewExpr"; }
     void Check();
     Type* GetType();
+    int GetNumOfAccess() { return 0; }
     NamedType* GetNamedType() { return cType; }
     void PrintChildren(int indentLevel);
 };

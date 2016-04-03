@@ -77,7 +77,6 @@ class Stmt : public Node
   public:
      Stmt() : Node() { }
      virtual bool canBreak() { return false; }
-     virtual bool isReturn() { return false; }
      void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; }
      Stmt(yyltype loc) : Node(loc) {}
 };
@@ -90,7 +89,6 @@ class StmtBlock : public Stmt
 
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
-    bool isReturn();
     void BuildScope(SymbolTable* s);
     void Check();
     const char *GetPrintNameForNode() { return "StmtBlock"; }
@@ -125,7 +123,6 @@ class ForStmt : public LoopStmt
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
     const char *GetPrintNameForNode() { return "ForStmt"; }
-    bool isReturn() { return body->isReturn(); }
     bool canBreak() { return true; }
     void BuildScope(SymbolTable* s);
     void Check();
@@ -137,7 +134,6 @@ class WhileStmt : public LoopStmt
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
     const char *GetPrintNameForNode() { return "WhileStmt"; }
-    bool isReturn() { return body->isReturn(); }
     bool canBreak() { return true; }
     void BuildScope(SymbolTable* s);
     void Check();
@@ -153,7 +149,6 @@ class IfStmt : public ConditionalStmt
     IfStmt() : ConditionalStmt(), elseBody(NULL) {}
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
     const char *GetPrintNameForNode() { return "IfStmt"; }
-    bool isReturn();
     void BuildScope(SymbolTable* s);
     void Check();
     void PrintChildren(int indentLevel);
@@ -172,7 +167,6 @@ class BreakStmt : public Stmt
     BreakStmt(yyltype loc) : Stmt(loc) {}
     //bool isReturn() { return false; }
     void Check();
-    bool isReturn() { cout << "kjasgh;sjhhjH" << endl;  return false; }
     const char *GetPrintNameForNode() { return "BreakStmt"; }
 };
 
@@ -213,7 +207,6 @@ class SwitchLabel : public Stmt
   public:
     SwitchLabel(IntConstant *label, List<Stmt*> *stmts);
     SwitchLabel(List<Stmt*> *stmts);
-    bool caseReturn();
     void BuildScope(SymbolTable* s);
     void Check();
     void PrintChildren(int indentLevel);
@@ -223,7 +216,6 @@ class Case : public SwitchLabel
 {
   public:
     Case(IntConstant *label, List<Stmt*> *stmts) : SwitchLabel(label, stmts) {}
-    //bool caseReturn() { cout << ";jashkjqb;jB;DVJBsd;lvjb;SLDVJBS;V" << endl; return false;}
     const char *GetPrintNameForNode() { return "Case"; }
 };
 
@@ -246,7 +238,6 @@ class SwitchStmt : public Stmt
     SwitchStmt() : expr(NULL), cases(NULL), def(NULL) {}
     SwitchStmt(Expr *expr, List<Case*> *cases, Default *def);
     const char *GetPrintNameForNode() { return "SwitchStmt"; }
-    bool isReturn();
     bool canBreak() { return true; }
     void BuildScope(SymbolTable* s);
     void Check();

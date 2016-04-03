@@ -32,10 +32,11 @@ class Type : public Node
 
     const char *GetPrintNameForNode() { return "Type"; }
     void PrintChildren(int indentLevel);
+    bool IsCompatible(Type* t, SymbolTable* s);
+    virtual bool isArray() { return false; }
     virtual const char* GetTypeName() { return typeName; }
     virtual Type* GetType() { return Type::errorType; }
     virtual int GetNumberOfDims() { return 0; }
-    virtual bool isArray() { return false; }
     virtual bool isNamedType() { return false; }
     virtual void PrintToStream(ostream& out) { out << typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
@@ -66,7 +67,7 @@ class ArrayType : public Type
   public:
     ArrayType(yyltype loc, Type *elemType);
     Type* GetType() { return elemType; }
-    int GetNumberOfDims() { return numberOfDims; }
+    int GetNumberOfDims();
     const char *GetPrintNameForNode() { return "ArrayType"; }
     void PrintChildren(int indentLevel);
     bool isArray() { return true; }

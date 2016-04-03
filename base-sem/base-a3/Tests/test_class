@@ -1,4 +1,8 @@
 class Human{}
+
+void func(Humanoid x){
+}
+
 int main(){
 	
 	x = new Human;

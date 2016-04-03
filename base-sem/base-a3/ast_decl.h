@@ -34,6 +34,7 @@ class Decl : public Node
   public:
     Decl() : id(NULL) {}
     Decl(Identifier *name);
+    bool IsCompatible(Type* compatee, SymbolTable* s);
     virtual Decl* GetExtendScope() { return NULL; }
     virtual List<Decl*>* GetImplementScope() { return NULL; }
     virtual bool isInterface() { return false; }

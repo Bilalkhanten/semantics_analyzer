@@ -11,6 +11,9 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     (id=n)->SetParent(this);
 }
 
+bool Decl::IsCompatible(Type* compatee, SymbolTable*s) {
+    return GetType()->IsCompatible(compatee, s);
+}
 
 VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
     Assert(n != NULL && t != NULL);
@@ -73,12 +76,10 @@ void ClassDecl::BuildScope(SymbolTable* s){
                 found = true;
                 extendedScope = n;
                 if(n->GetScope() == NULL){
-                    cout << "Not a class: " << n->GetDeclName() << endl;
                     ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass);
                     extends = NULL;
                 }
                 else if (n->GetScope()->GetName() == NULL){
-                    cout << "Not a class: " << n->GetDeclName() << endl;
                     ReportError::IdentifierNotDeclared(extends->GetID(), LookingForClass);
                     extends = NULL;
                 }
@@ -145,7 +146,6 @@ void ClassDecl::Check(){
                     interVars = declInt->GetFormals();
 
                     if(classVars->NumElements() != interVars->NumElements()){
-                        cout << "class: " <<  classVars->Nth(i) << endl;
                         ReportError::InterfaceNotImplemented(this, implements->Nth(i));
                         continue;
                     }
@@ -186,7 +186,6 @@ bool ClassDecl::CheckOverriding(int i, Decl* extendC, SymbolTable* parentT){
     Decl* member = members->Nth(i);
     Decl* memberEx = extendC->GetScope()->CheckDecl(member);
     if(member->GetFormals() == NULL){
-        cout << "null" << endl;
         if(memberEx != NULL){
             ReportError::OverrideVarError(member, extendC);
         }
@@ -304,11 +303,9 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
         types->Append(formals->Nth(i)->GetType());
         formalsTable->AddDecl(formals->Nth(i), overwrite);
     }
-
     if(body != NULL){
         body->BuildScope(formalsTable);
     }
-    cout << "endedbodyscope" << endl;
 }
 
 void FnDecl::Check(){
@@ -335,6 +332,33 @@ void FnDecl::Check(){
         }
         if(!found){
             ReportError::IdentifierNotDeclared(new Identifier(*this->location, rtName), LookingForClass);
+        }
+    }
+
+    for(int i = 0; i < formals->NumElements(); i++){
+        Type* t = formals->Nth(i)->GetType();
+        const char* tName = t->GetTypeName();
+
+        if(tName != Type::intType->GetTypeName() &&
+           tName != Type::doubleType->GetTypeName() &&
+           tName != Type::boolType->GetTypeName() &&
+           tName != Type::stringType->GetTypeName() &&
+           tName != Type::voidType->GetTypeName()){
+            SymbolTable* current = new SymbolTable();
+            current = formalsTable->GetParentTable();
+            Decl* d = NULL;
+
+            while(current != NULL){
+                Decl* d = current->CheckDecl(tName);
+                if(d != NULL){
+                    found = true;
+                    break;
+                }
+                current = current->GetParentTable();
+            }
+            if(!found){
+                ReportError::IdentifierNotDeclared(new Identifier(*this->location, tName), LookingForClass);
+            }
         }
     }
 

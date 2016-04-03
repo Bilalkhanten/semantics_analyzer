@@ -107,15 +107,6 @@ void StmtBlock::PrintChildren(int indentLevel) {
     stmts->PrintAll(indentLevel+1);
 }
 
-bool StmtBlock::isReturn(){
-    for(int i = 0; i < stmts->NumElements(); i++){
-        if(stmts->Nth(i)->isReturn()){
-            return true;
-        }
-    }
-    return false;
-}
-
 void StmtBlock::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
@@ -170,6 +161,7 @@ void ForStmt::PrintChildren(int indentLevel) {
 void ForStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+    localScope->SetBreakCheck(this);
 
     init->BuildScope(s);
     test->BuildScope(s);
@@ -198,6 +190,7 @@ void WhileStmt::PrintChildren(int indentLevel) {
 void WhileStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+    localScope->SetBreakCheck(this);
 
     test->BuildScope(localScope);
     body->BuildScope(localScope);
@@ -208,9 +201,7 @@ void WhileStmt::Check(){
     if(test->GetType()->GetTypeName() != Type::boolType->GetTypeName()){
         ReportError::TestNotBoolean(test);
     }
-    cout << "herleg;ljEG;/" << endl;
     test->Check();
-    cout << "herleg;ljEG;/" << endl;
     body->Check();
 }
 
@@ -250,30 +241,16 @@ void IfStmt::Check(){
     }
 }
 
-bool IfStmt::isReturn(){
-    if(body->isReturn()){
-        return true;
-    }
-    else{
-        if(elseBody){
-            if(elseBody->isReturn()){
-                return true;
-            }
-            return false;
-        }
-        return false;
-    }
-}
-
 void BreakStmt::Check(){
     SymbolTable* current = new SymbolTable();
     current = localScope;
     bool found = false;
-
     while(current != NULL && !found){
         Stmt* s = current->GetBreakCheck();
-        if(s->canBreak()){
-            found = true;
+        if(s != NULL){
+            if(s->canBreak()){
+                found = true;
+            }
         }
         current = current->GetParentTable();
     }
@@ -319,7 +296,6 @@ void ReturnStmt::Check(){
     }
     if(expr->isEmpty()){
         if(decl->GetType() == Type::voidType){
-            cout << "Good void return";
             return;
         }
         else{
@@ -331,17 +307,13 @@ void ReturnStmt::Check(){
 
     Type* t = expr->GetType();
     if(t == NULL){
-        cout << "NULL Here";
         return;
     }
     else{
         if( t->GetTypeName() == decl->GetType()->GetTypeName()){
-
-            cout << "Good return value." << endl;
             return;
         }
         else{
-            cout << "Error" << endl;
             ReportError::ReturnMismatch(this, t, decl->GetType());
             return;
         }
@@ -400,23 +372,6 @@ void SwitchLabel::BuildScope(SymbolTable* s){
     }
 }
 
-bool SwitchLabel::caseReturn(){
-    cout << "here" << endl;cout << "here" << endl;
-    bool found = false;
-    for(int i = 0; i < stmts->NumElements(); i++){
-        cout << "herei6757" << endl;
-        BreakStmt* stmt = new BreakStmt(*location);
-        //stmt = stmts->Nth(i);
-        found = stmt->isReturn();
-        if(found){
-                cout << "here" << endl;
-            return true;
-        }
-        cout << "here" << endl;
-    }
-    return false;
-}
-
 void SwitchLabel::Check(){
     for(int i = 0; i < stmts->NumElements(); i++){
         stmts->Nth(i)->Check();
@@ -436,41 +391,16 @@ SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {
     if (def) def->SetParent(this);
 }
 
-bool SwitchStmt::isReturn(){
-    cout << "here" << endl;
-    if(def){
-        cout << "here" << endl;
-        if(def->caseReturn()){
-            cout << "here" << endl;
-            return true;
-        }
-    }
-    Assert(cases->Nth(0) != NULL);
-
-    Case* c = cases->Nth(0);
-    Assert(c != NULL);
-    c->caseReturn();
-    cout << "here" << endl;
-    for(int i = 0; i < cases->NumElements(); i++){
-        Assert(cases->Nth(i) != NULL);
-        Case* c1 = cases->Nth(i);
-        bool found = c1->caseReturn();
-        if(found){
-                cout << "here" << endl;
-            return true;
-        }
-    }
-    cout << "here" << endl;
-    return false;
-}
-
 void SwitchStmt::BuildScope(SymbolTable* s){
     localScope = new SymbolTable();
     localScope->SetParentTable(s);
+    localScope->SetBreakCheck(this);
+
     expr->BuildScope(s);
-    if(def) def->BuildScope(s);
+
+    if(def) def->BuildScope(localScope);
     for (int i = 0; i < cases->NumElements(); i++){
-        cases->Nth(i)->BuildScope(s);
+        cases->Nth(i)->BuildScope(localScope);
     }
 }
 
