@@ -1,0 +1,24 @@
+
+class Dog{}
+
+int main(){
+	bool x;
+	bool y;
+
+	Dog a;
+	Dog b;
+
+	string t1;
+	string t2;
+
+	int i1;
+	int i2;
+
+	if(a == b){}
+	if(a != b){}
+	if(t1 == t2){}
+	if(x == y){}
+	if(i1 != i2){}
+	if((a==b) == x){}
+	if(i1 == a){}
+}

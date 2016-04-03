@@ -1,0 +1,11 @@
+class Check{
+
+	void func(){
+		
+	}
+
+}
+
+string temp(){
+	return "Hello, world!";
+}

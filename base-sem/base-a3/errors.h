@@ -63,7 +63,9 @@ class ReportError {
   // Errors used by semantic analyzer for declarations
   static void DeclConflict(Decl *newDecl, Decl *prevDecl);
   static void OverrideMismatch(Decl *fnDecl);
+  static void OverrideVarError(Decl* member, Decl* extendC);
   static void InterfaceNotImplemented(Decl *classDecl, Type *intfType);
+  static void NotCompatible(Decl* thisClass, Type* compatee);
 
 
   // Errors used by semantic analyzer for identifiers
@@ -80,6 +82,7 @@ class ReportError {
   static void BracketsOnNonArray(Expr *baseExpr);
   static void SubscriptNotInteger(Expr *subscriptExpr);
   static void NewArraySizeNotInteger(Expr *sizeExpr);
+  static void NewArrayVoidType(Type* voidExpr);
 
 
   // Errors used by semantic analyzer for function/method calls

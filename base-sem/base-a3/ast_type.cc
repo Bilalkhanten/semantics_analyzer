@@ -1,12 +1,12 @@
-/* 
+/*
  * Implementation of type node classes.
  */
 
 #include <string.h>
 #include "ast_type.h"
 #include "ast_decl.h"
- 
-/* 
+
+/*
  * Class constants
  * ---------------
  *
@@ -22,7 +22,7 @@ Type *Type::voidType   = new Type("void");
 Type *Type::boolType   = new Type("bool");
 Type *Type::nullType   = new Type("null");
 Type *Type::stringType = new Type("string");
-Type *Type::errorType  = new Type("error"); 
+Type *Type::errorType  = new Type("error");
 
 Type::Type(const char *n) {
     Assert(n);
@@ -32,11 +32,11 @@ Type::Type(const char *n) {
 void Type::PrintChildren(int indentLevel) {
     printf("%s", typeName);
 }
-	
+
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
     Assert(i != NULL);
     (id=i)->SetParent(this);
-} 
+}
 
 void NamedType::PrintChildren(int indentLevel) {
     id->Print(indentLevel+1);
@@ -51,4 +51,14 @@ void ArrayType::PrintChildren(int indentLevel) {
     elemType->Print(indentLevel+1);
 }
 
+const char* ArrayType::GetTypeName(){
+    Type* t = elemType;
+    this->numberOfDims = 1;
 
+    while(t->isArray()){
+        this->numberOfDims++;
+        t = t->GetType();
+    }
+    cout << endl << "number:  " << this->numberOfDims << endl;
+    return elemType->GetTypeName();
+}

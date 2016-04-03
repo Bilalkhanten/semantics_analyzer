@@ -1,0 +1,10 @@
+class Batman {
+int w;
+}
+
+int main(){
+Batman x;
+Batman y;
+
+x=y;
+}

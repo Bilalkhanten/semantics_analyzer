@@ -81,10 +81,22 @@ void ReportError::OverrideMismatch(Decl *fnDecl) {
     OutputError(fnDecl->GetLocation(), s.str());
 }
 
+void ReportError::OverrideVarError(Decl* member, Decl* extendC){
+    ostringstream s;
+    s << "Variable '" << member << "' previously declared in '" << extendC << "'.";
+    OutputError(member->GetLocation(), s.str());
+}
+
 void ReportError::InterfaceNotImplemented(Decl *cd, Type *interfaceType) {
     ostringstream s;
     s << "Class '" << cd << "' does not implement entire interface '" << interfaceType << "'";
     OutputError(interfaceType->GetLocation(), s.str());
+}
+
+void ReportError::NotCompatible(Decl* cd, Type* temp) {
+    ostringstream s;
+    s << "Class '" << temp->GetTypeName() << "' is not compatible with '" << cd << "'";
+    OutputError(temp->GetLocation(), s.str());
 }
 
 void ReportError::IdentifierNotDeclared(Identifier *ident, reasonT whyNeeded) {
@@ -121,6 +133,10 @@ void ReportError::SubscriptNotInteger(Expr *subscriptExpr) {
 
 void ReportError::NewArraySizeNotInteger(Expr *sizeExpr) {
     OutputError(sizeExpr->GetLocation(), "Size for NewArray must be an integer");
+}
+
+void ReportError::NewArrayVoidType(Type* voidExpr){
+    OutputError(voidExpr->GetLocation(), "Must be of nonvoid type.");
 }
 
 void ReportError::NumArgsMismatch(Identifier *fnIdent, int numExpected, int numGiven) {

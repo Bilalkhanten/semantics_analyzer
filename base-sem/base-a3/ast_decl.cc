@@ -198,6 +198,22 @@ bool ClassDecl::CheckOverriding(int i, Decl* extendC, SymbolTable* parentT){
 
     Decl* member = members->Nth(i);
     Decl* memberEx = extendC->GetScope()->CheckDecl(member);
+    if(member->GetFormals() == NULL){
+        cout << "null" << endl;
+        if(memberEx != NULL){
+            ReportError::OverrideVarError(member, extendC);
+        }
+        else{
+            Decl* extendNext = extendC->GetExtendScope();
+            if(extendNext != NULL){
+                return CheckOverriding(i, extendNext, parentT);
+            }
+            else{
+                ReportError::OverrideVarError(member, extendC);
+            }
+        }
+        return false;
+    }
     if(memberEx != NULL){
         found = true;
         Type* t = member->GetType();
@@ -305,19 +321,12 @@ void FnDecl::BuildScope(SymbolTable* parentScope){
     if(body != NULL){
         body->BuildScope(formalsTable);
     }
+    cout << "endedbodyscope" << endl;
 }
 
 void FnDecl::Check(){
     if(body != NULL){
         Assert(body!=NULL);
-
-        bool found = body->isReturn();
-        if(!found){
-            if(returnType->GetTypeName() != Type::voidType->GetTypeName()){
-                //Return not found
-                cout << "Return not found." << endl;
-            }
-        }
         body->Check();
     }
 }

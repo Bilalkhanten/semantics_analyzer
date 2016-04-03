@@ -1,0 +1,10 @@
+int main() {
+	bool x;
+	bool y;
+
+	if(x && y){
+	}
+
+	if(!x && !y){
+	}
+}

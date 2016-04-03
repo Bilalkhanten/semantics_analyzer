@@ -1,4 +1,3 @@
-
 /*
  * Implementation of expression node classes.
  */
@@ -7,7 +6,127 @@
 #include "ast_expr.h"
 #include "ast_type.h"
 #include "ast_decl.h"
+#include <typeinfo>
 
+/**
+    Class Animal{}
+    Class Dog implements Animal{}
+    //CHECK IF RIGHT(COMPATEE) IS COMPATIBLE WITH LEFT
+    //Use like this
+    Animal a = (Dog)b;
+    //We check to see if b is compatible with an assignment to the type of a.
+    b.IsCompatible(a);
+**/
+bool Expr::IsCompatible(Expr* compatee){
+    Type* t_left = this->GetType();
+    Type* t_compatee = compatee->GetType();
+
+    if(strcmp(t_left->GetTypeName(), t_compatee->GetTypeName()) == 0){
+        return true;
+    }
+    else{
+        cout << "uhlgiua.a" << endl;
+        Decl* thisClass;
+        Decl* otherClass;
+        SymbolTable* current = new SymbolTable();
+        SymbolTable* parentT = new SymbolTable();
+        current = localScope;
+        bool found = false;
+
+        while(current != NULL && !found){
+            //cout << t_compatee << endl;
+            thisClass = current->CheckDecl(t_left->GetTypeName());
+            if(thisClass != NULL){
+                found = true;
+            }
+            parentT = current;
+            current = current->GetParentTable();
+        }
+        cout << "uhlgiua.a" << endl;
+        Decl* extends = thisClass->GetExtendScope();
+        if(extends){
+            if(extends->GetDeclName() == t_left->GetTypeName()){
+                cout <<"found a good one" << endl << endl;
+                return true;
+            }
+            else{
+                found = false;
+                List<Decl*>* implements = thisClass->GetImplementScope();
+                if(implements != NULL){
+                    for(int i = 0; i < implements->NumElements(); i++){
+                        const char* temp = implements->Nth(i)->GetDeclName();
+                        cout << " " << implements->Nth(i)->GetDeclName() << endl;
+                        if(strcmp(temp, t_compatee->GetTypeName()) == 0){
+                            cout <<"found a good one2" << endl << endl;
+                            found = true;
+                        }
+                    }
+                }
+                current = localScope;
+                cout << "uhlgiua.a" << endl;
+                while(!found && (extends || (implements->NumElements() > 0))){
+                    if(extends){
+                        if(strcmp(extends->GetDeclName(), t_compatee->GetTypeName()) == 0){
+                            cout <<"found a good one1" << endl << endl;
+                            found = true;
+                            return true;
+                        }
+                    }
+
+                    for(int i = 0; i < implements->NumElements(); i++){
+                        const char* temp = implements->Nth(i)->GetDeclName();
+                        cout << " " << implements->Nth(i)->GetDeclName() << endl;
+                        if(strcmp(temp, t_compatee->GetTypeName()) == 0){
+                            cout <<"found a good one2" << endl << endl;
+                            found = true;
+                            return true;
+                        }
+                    }
+
+                    if(extends){
+                        cout << "uhlgiua.a" << endl;
+                        implements = extends->GetImplementScope();
+                        if(implements == NULL){
+                            implements = new List<Decl*>();
+                        }
+                        extends = extends->GetExtendScope();
+                        cout << "uhlgiua.a12415235" << endl;
+                    }
+                    else{
+                        break;
+                    }
+                }
+                cout << "uhlgiua.a" << endl;
+                if(!found){
+                    cout << "uhlgiua.aqwrgwegw22r23" << endl;
+                    ReportError::NotCompatible(thisClass, t_compatee);
+                    return false;
+                }
+                cout <<"found a good one3" << endl << endl;
+                return true;
+            }
+        }
+
+        found = false;
+        List<Decl*>* implements = thisClass->GetImplementScope();
+        cout << "uhlgiua.a" << endl;cout << "uhlgiua.a" << endl;
+        if(implements != NULL){
+            for(int i = 0; i < implements->NumElements(); i++){
+                const char* temp = implements->Nth(i)->GetDeclName();
+                if(strcmp(temp, t_compatee->GetTypeName()) == 0){
+                    found = true;
+                }
+            }
+            if(!found){
+                cout << "uhlgiua.a" << endl;cout << "uhlgiua.a" << endl;
+                ReportError::NotCompatible(thisClass, t_compatee);
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+}
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -88,13 +207,15 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
 }
 
 Type* CompoundExpr::GetType(){
+		cout << "Here1" << endl; cout << "here1" << endl;
     if(left == NULL){
         return right->GetType();
     }
     Type* t_left = left->GetType();
     Type* t_right = right->GetType();
 
-    if(t_left->IsEquivalentTo(t_right)){
+    if(strcmp(t_left->GetTypeName(), t_right->GetTypeName()) == 0){
+    		cout << "Here1" << endl; cout << "here1" << t_left->GetTypeName() << endl;
         return t_left;
     }
     else{
@@ -127,6 +248,14 @@ PostfixExpr::PostfixExpr(Expr *l,Operator *o)
     (left=l)->SetParent(this);
 }
 
+void PostfixExpr::Check(){
+    Type* t = left->GetType();
+    Assert(t != NULL);
+    if(t->GetTypeName() != Type::intType->GetTypeName()){
+        ReportError::IncompatibleOperand(op, t);
+    }
+}
+
 void PostfixExpr::PrintChildren(int indentLevel) {
     left->Print(indentLevel+1);
     op->Print(indentLevel+1);
@@ -136,134 +265,93 @@ void ArithmeticExpr::Check() {
 
     if (left != NULL)
         left->Check();
-    right->Check();
 
-    Type* t_Left = NULL;
+    right->Check();
+    cout << "herher "
+;    Type *t_Left;
 
     if (left != NULL)
         t_Left = left->GetType();
 
-    Type* t_Right = right->GetType();
+    Type *t_Right = right->GetType();
 
-
-    if (t_Left == NULL && left != NULL) {
-
-        SymbolTable* curr = new SymbolTable;
-        curr = localScope;
-
-        Type* n = NULL;
-        if (left->GetID() != NULL) {
-            while(curr != NULL){
-                Decl* d = curr->CheckDecl(left->GetID()->GetName());
-                if(d != NULL){
-                     n = d->GetType();
-                }
-                curr = curr->GetParentTable();
-            }
+    if (left != NULL) {
+        if ((t_Right->GetTypeName() != Type::intType->GetTypeName() || t_Left->GetTypeName() != Type::intType->GetTypeName())) {
+            if (t_Left->GetTypeName() != Type::doubleType->GetTypeName() || t_Right->GetTypeName() != Type::doubleType->GetTypeName())
+                ReportError::IncompatibleOperands(op, t_Left, t_Right);
         }
-        else {
-            Type* t = left->GetType();
+        else{
+            return;
         }
     }
+
     else {
-        VarDecl* var = dynamic_cast<VarDecl *>(localScope->CheckDecl(left->GetID()->GetName()));
-        t_Left = var->GetType();
-    }
-
-    if (t_Right == NULL && right != NULL) {
-
-       SymbolTable* curr = new SymbolTable;
-        curr = localScope;
-
-        Type* n = NULL;
-        if (right->GetID() != NULL) {
-            while(curr != NULL){
-                Decl* d = curr->CheckDecl(right->GetID()->GetName());
-                if(d != NULL){
-                     n = d->GetType();
-                }
-                curr = curr->GetParentTable();
-            }
-        }
-        else {
-            ReportError::IdentifierNotDeclared(right->GetID(), LookingForVariable);
-        }
-    }
-    else {
-        VarDecl* var = dynamic_cast<VarDecl *>(localScope->CheckDecl(right->GetID()->GetName()));
-        t_Left = var->GetType();
-    }
-
-    if (left == NULL) {
-        if (t_Right->GetTypeName() != Type::doubleType->GetTypeName() || t_Right->GetTypeName() != Type::intType->GetTypeName())
-        {
+        if (t_Right->GetTypeName() != Type::intType->GetTypeName() && t_Right->GetTypeName() != Type::doubleType->GetTypeName())
             ReportError::IncompatibleOperand(op, t_Right);
-        }
-    return;
+        else
+            return;
     }
-
-    if (t_Left->GetTypeName() == t_Right->GetTypeName()) {
-
-        if (t_Left->GetTypeName() == Type::errorType->GetTypeName() || t_Right->GetTypeName() == Type::errorType->GetTypeName())
-            ;
-        else if (t_Left->GetTypeName() == Type::intType->GetTypeName() || t_Left->GetTypeName() == Type::doubleType->GetTypeName())
-            ;
-        else {
-
-            ReportError::IncompatibleOperands(op, t_Left, t_Right);
-        }
-    }
-    else {
-        ReportError::IncompatibleOperands(op, t_Left, t_Right);
-    }*/
 }
 
-Type* ArithmeticExpr::GetType() {
-    if(left == NULL){
+Type* ArithmeticExpr::GetType(){
+    Type* t_left;
+    Type* t_right;
+
+    if(left != NULL){
+        t_left = left->GetType();
+        t_right = right->GetType();
+        if(t_left == NULL || t_right == NULL){
+            return NULL;
+        }
+
+        if ((t_right->GetTypeName() != Type::intType->GetTypeName() || t_left->GetTypeName() != Type::intType->GetTypeName())) {
+            if (t_left->GetTypeName() != Type::doubleType->GetTypeName() || t_right->GetTypeName() != Type::doubleType->GetTypeName())
+                ReportError::IncompatibleOperands(op, t_left, t_right);
+            return right->GetType();
+        }
+        else{
+            return right->GetType();
+        }
         return right->GetType();
     }
-    Type* t_left = left->GetType();
-    Type* t_right = right->GetType();
-
-    if(t_left->IsEquivalentTo(t_right)){
-        return t_left;
-    }
     else{
-        //Error
-        return NULL;
+        return right->GetType();
     }
 }
 
 void RelationalExpr::Check() {
 
-    left->Check();
+    if (left != NULL)
+        left->Check();
+
     right->Check();
 
-    Type* t_Left = left->GetType();
-    Type* t_Right = right->GetType();
+    Type *t_Left;
 
-    Identifier* left_Id;
-    Decl* left_Decl;
+    if (left != NULL)
+        t_Left = left->GetType();
 
-    if (t_Left == NULL && left != NULL) {
+    Type *t_Right = right->GetType();
 
-        left_Id = left->GetID();
+    if (left != NULL) {
 
-        Assert(left_Id != NULL);
-
-        left_Decl = localScope->CheckDecl(left_Id->GetName());
-
-        if (left_Decl == NULL) {
-            ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
+        if (((t_Right->GetTypeName() != Type::intType->GetTypeName()) || (t_Left->GetTypeName() != Type::intType->GetTypeName()))){
+            if (t_Left->GetTypeName() != Type::doubleType->GetTypeName() || t_Right->GetTypeName() != Type::doubleType->GetTypeName()){
+                ReportError::IncompatibleOperands(op, t_Left, t_Right);
+            }
+            return;
+        }
+        else {
+            return;
         }
     }
-    else {
-        VarDecl* var = dynamic_cast<VarDecl *>(left_Decl);
-        t_Left = var->GetType();
-    }
 
-    if (t_Left->GetTypeName() != t_Right->GetTypeName()) {
-        ReportError::IncompatibleOperands(op, t_Left, t_Right);
+    else {
+        if (t_Right->GetTypeName() != Type::intType->GetTypeName() && t_Right->GetTypeName() != Type::doubleType->GetTypeName()) {
+            ReportError::IncompatibleOperand(op, t_Right);
+        }
+        else
+            return;
     }
 }
 
@@ -274,12 +362,12 @@ Type* RelationalExpr::GetType() {
     Type* t_left = left->GetType();
     Type* t_right = right->GetType();
 
-    if(t_left->IsEquivalentTo(t_right)){
-        return t_left;
+    if(t_left->GetTypeName() == t_right->GetTypeName()){
+        return Type::boolType;
     }
     else{
         //Error
-        return NULL;
+        return Type::errorType;
     }
 }
 
@@ -296,17 +384,26 @@ void LogicalExpr::Check() {
     Type *t_Right = right->GetType();
 
     if (left != NULL) {
-        if (t_Right->GetTypeName() != Type::boolType->GetTypeName() && t_Left->GetTypeName() != Type::boolType->GetTypeName())
+        cout << t_Right->GetTypeName() << "  " << t_Left->GetTypeName() << endl;
+         if (t_Right->GetTypeName() != Type::boolType->GetTypeName() || t_Left->GetTypeName() != Type::boolType->GetTypeName()){
             ReportError::IncompatibleOperands(op, t_Left, t_Right);
-        else
             return;
+         }
+        else{
+            cout << "here correct";
+            return;
+        }
     }
 
     else {
-        if (t_Right->GetTypeName() != Type::boolType->GetTypeName())
+        if (t_Right->GetTypeName() != Type::boolType->GetTypeName()){
             ReportError::IncompatibleOperand(op, t_Right);
-        else
             return;
+        }
+        else{
+            cout << "lshgslhkgdlk" << endl;
+            return;
+        }
     }
 }
 
@@ -320,73 +417,24 @@ Type* LogicalExpr::GetType() {
     Assert(t_left != NULL && t_right != NULL);
 
     if(t_left->GetTypeName() == t_right->GetTypeName()){
+        cout << "otheth;alalt" << endl;
         return t_left;
     }
     else{
         //Error
-        return NULL;
+        return t_left;
     }
 }
 
 void EqualityExpr::Check() {
     left->Check();
     right->Check();
-
     Type *t_Left = left->GetType();
     Type *t_Right = right->GetType();
 
-    if (t_Right == Type::nullType && t_Left != Type::nullType) {
-
-        NamedType* t_Left_Named = dynamic_cast<NamedType *>(t_Left);
-        if (t_Left_Named == NULL)
-            ReportError::IncompatibleOperands(op, t_Left, t_Right);
-        return;
-    }
-
-    if (t_Left == NULL) {
-
-        Identifier *left_Id = left->GetID();
-
-        Decl *d_Left = localScope->CheckDecl(left_Id->GetName());
-
-        if (d_Left == NULL) {
-            ReportError::IdentifierNotDeclared(left_Id, LookingForVariable);
-        }
-        else {
-            VarDecl *var = dynamic_cast<VarDecl *>(d_Left);
-            t_Left = var->GetType();
-        }
-    }
-
-    if (t_Left == Type::voidType || t_Right == Type::voidType) {
+    if (strcmp(t_Left->GetTypeName(), t_Right->GetTypeName()) != 0) {
         ReportError::IncompatibleOperands(op, t_Left, t_Right);
-    }
-    else if (t_Left->IsEquivalentTo(t_Right))
-        ;
-    else {
-
-        NamedType* nt_Left = dynamic_cast<NamedType *>(left->GetType());
-        NamedType* nt_Right = dynamic_cast<NamedType *>(right->GetID());
-
-        ClassDecl* left_Decl = dynamic_cast<ClassDecl*>(localScope->CheckDecl(nt_Left));
-        ClassDecl* right_Decl = dynamic_cast<ClassDecl*>(localScope->CheckDecl(nt_Right));
-
-        NamedType* n = dynamic_cast<NamedType *>(left_Decl->GetExtendScope()->GetType());
-        Decl* d = left_Decl->GetExtendScope();
-
-        for (int i = 0; n != NULL; i++) {
-
-            if (n->IsEquivalentTo(nt_Right)) {
-                return;
-            }
-            else {
-                ReportError::IncompatibleOperands(op, t_Left, t_Right);
-                return;
-            }
-
-            n = dynamic_cast<NamedType *>(d->GetType());
-            d = d->GetExtendScope();
-        }
+        return;
     }
 }
 
@@ -396,15 +444,12 @@ Type* EqualityExpr::GetType() {
     }
     Type* t_left = left->GetType();
     Type* t_right = right->GetType();
-
-    Assert(t_left != NULL && t_right != NULL);
-
-    if(t_left->GetTypeName() == t_right->GetTypeName()){
-        return t_left;
+    if(strcmp(t_left->GetTypeName(), t_right->GetTypeName()) == 0){
+        return Type::boolType;
     }
     else{
         //Error
-        return NULL;
+        return Type::errorType;
     }
 }
 
@@ -413,6 +458,104 @@ void AssignExpr::Check(){
     right->Check();
 
     Assert(left != NULL);
+
+    Type* t_Left = left->GetType();
+    Type* t_Right = right->GetType();
+    cout << t_Left->GetTypeName() << " " << t_Right->GetTypeName() << endl;
+    if (t_Right->GetTypeName() == Type::nullType->GetTypeName())
+    {
+        NamedType* nt_Left = dynamic_cast<NamedType *>(t_Left);
+        if (nt_Left == NULL && t_Left != Type::errorType)
+        {
+            ReportError::IncompatibleOperands(op, t_Left, t_Right);
+        }
+        return;
+    }
+
+    if(right->GetType()->isNamedType()){
+        if(left->GetType()->isNamedType()){
+            if (!right->IsCompatible(left)) {
+                cout << "erjkhlkGU";
+                ReportError::IncompatibleOperands(op, left->GetType(), right->GetType());
+                return;
+            }
+            else{
+                return;
+            }
+        }
+    }
+
+    if(t_Left->isArray()){
+            if(right->isNewArray()){
+                cout << "true new arrya";
+            }
+        if(t_Right->isArray() || right->isNewArray()){
+            cout << "true new arrya";
+            if((t_Left->GetNumberOfDims() != t_Right->GetNumberOfDims()) && !left->isArrayAccess()){
+                    cout << "akjfhau ;foIH PIH Q0" << endl;
+                    cout << "not the same number of dims" << endl;
+                    ReportError::IncompatibleOperands(op, t_Left, t_Right);
+                    return;
+            }
+            if (strcmp(t_Left->GetTypeName(), t_Right->GetTypeName()) != 0) {
+                cout << "aUGFLIUqglougqg" << endl;
+                ReportError::IncompatibleOperands(op, left->GetType(), right->GetType());
+                return;
+            }
+            else if (!left->isArrayAccess()){
+                if(t_Left->GetNumberOfDims() != t_Right->GetNumberOfDims()){
+                    cout << "akjfhau ;foIH PIH Q0" << endl;
+                    cout << "not the same number of dims";
+                    ReportError::IncompatibleOperands(op, t_Left, t_Right);
+                }
+                cout << "kjleglfkjgwe;a" << endl;
+                if(right->isNewArray()){
+                        cout << "kjleglfkjgwe;a" << endl;
+                    if(t_Left->GetNumberOfDims() == 1){
+                        cout << "correct" << endl;
+                    }
+                    else{
+                        cout << "incorrect " << endl;
+                    }
+                }
+                return;
+            }
+        }
+        if(strcmp(t_Left->GetTypeName(), t_Right->GetTypeName()) == 0 && left->isArrayAccess()){
+            cout << left->GetNumOfAccess() << " " << right->GetNumOfAccess() <<  endl;
+            if((t_Left->GetNumberOfDims() - left->GetNumOfAccess()) == t_Right->GetNumberOfDims()){
+                cout << "Array access is good." << endl;
+                return;
+            }
+            else{
+                ReportError::IncompatibleOperands(op, t_Left, t_Right);
+                return;
+            }
+        }
+        cout << "hgAILU Gqu;fI;ieng/;eawg" << endl;
+        //cout << "aUGFLIUqglougqg" << endl;
+        ReportError::IncompatibleOperands(op, left->GetType(), right->GetType());
+        return;
+    }
+    else if(t_Right->isArray()){
+        if(right->isArrayAccess()){
+            if(strcmp(t_Right->GetTypeName(), t_Left->GetTypeName()) == 0){
+                return;
+            }
+        }
+        else if(strcmp(t_Right->GetTypeName(), t_Left->GetTypeName()) == 0){
+            cout << "here" << endl;
+            return;
+        }
+        //cout << "aUGFLIUqglougqg" << endl;
+        ReportError::IncompatibleOperands(op, left->GetType(), right->GetType());
+        return;
+    }
+
+    if (strcmp(t_Left->GetTypeName(), t_Right->GetTypeName()) != 0) {
+        ReportError::IncompatibleOperands(op, left->GetType(), right->GetType());
+        return;
+    }
 }
 
 Type* AssignExpr::GetType() {
@@ -421,15 +564,14 @@ Type* AssignExpr::GetType() {
     }
     Type* t_left = left->GetType();
     Type* t_right = right->GetType();
-
-    Assert(t_left != NULL && t_right != NULL);
-
-    if(t_left->GetTypeName() == t_right->GetTypeName()){
+    cout <<  t_left->GetTypeName() <<" " << t_right->GetTypeName() << endl;
+    if(strcmp(t_left->GetTypeName(), t_right->GetTypeName()) == 0){
         return t_left;
     }
     else{
         //Error
-        return NULL;
+        cout << "here";
+        return Type::errorType;
     }
 }
 
@@ -444,6 +586,13 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
 }
 
 Type* ArrayAccess::GetType(){
+    Expr* e = base;
+    numberOfAccess = 0;
+    while(e != NULL){
+        numberOfAccess++;
+        e = e->GetBase();
+    }
+
     return base->GetType();
 }
 
@@ -471,7 +620,8 @@ Type* FieldAccess::GetType(){
         current = current->GetParentTable();
     }
     //Error: Did not find the declaration.
-    return NULL;
+    cout << "leglugeUH;weog" << endl;
+    return Type::errorType;
 }
 
 void FieldAccess::PrintChildren(int indentLevel) {
@@ -560,12 +710,31 @@ void FieldAccess::Check(){
     }
 }
 
+void ArrayAccess::Check() {
+    base->Check();
+    subscript->Check();
+
+    if (subscript->GetType()->GetTypeName() != Type::intType->GetTypeName())
+    {
+        ReportError::SubscriptNotInteger(subscript);
+    }
+
+    if (typeid(*base->GetType()) != typeid(ArrayType)) {
+        ReportError::BracketsOnNonArray(base);
+        return;
+    }
+}
+
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
     base = b;
     if (base) base->SetParent(this);
     (field=f)->SetParent(this);
     (actuals=a)->SetParentAll(this);
+}
+
+Type* Call::GetType(){
+
 }
 
  void Call::PrintChildren(int indentLevel) {
@@ -580,6 +749,34 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
   (cType=c)->SetParent(this);
 }
 
+void NewExpr::Check() {
+    if (cType) {
+        const char *name = this->cType->GetTypeName();
+        if (name)
+        {
+            bool found = false;
+            Decl *decl = localScope->CheckDecl(name);
+            SymbolTable* current = new SymbolTable();
+            current = localScope;
+
+            while(current != NULL && !found){
+                decl = current->CheckDecl(name);
+                if(decl != NULL){
+                    found = true;
+                }
+                current = current->GetParentTable();
+            }
+            if(!found){
+                ReportError::IdentifierNotDeclared(new Identifier(*this->cType->GetLocation(), name), LookingForClass);
+            }
+        }
+    }
+}
+
+Type* NewExpr::GetType(){
+    return cType;
+}
+
 void NewExpr::PrintChildren(int indentLevel) {
     cType->Print(indentLevel+1);
 }
@@ -590,7 +787,26 @@ NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
     (elemType=et)->SetParent(this);
 }
 
+void NewArrayExpr::Check() {
+    size->Check();
+
+    if (size->GetType()->GetTypeName() != Type::intType->GetTypeName())
+        ReportError::NewArraySizeNotInteger(size);
+    if (strcmp(elemType->GetTypeName(), Type::voidType->GetTypeName())){
+        ReportError::NewArrayVoidType(elemType);
+    }
+}
+
 void NewArrayExpr::PrintChildren(int indentLevel) {
     size->Print(indentLevel+1);
     elemType->Print(indentLevel+1);
 }
+
+Type* ReadIntegerExpr::GetType(){
+    return Type::intType;
+}
+
+Type* ReadLineExpr::GetType(){
+    return Type::stringType;
+}
+

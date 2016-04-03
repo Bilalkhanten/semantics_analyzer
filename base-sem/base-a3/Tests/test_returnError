@@ -1,0 +1,17 @@
+int main(){
+	if(true){
+		while(true){
+			return 0;
+		}
+	}
+
+}
+
+string temp(){
+	int num;
+	//num = 0;
+
+	switch(num){
+	case 0: return "temp";
+	}
+}

@@ -1,0 +1,13 @@
+int main() {
+	bool x;
+	bool y;
+	bool z;
+
+	if(x && y && z){
+	}
+	if(x || y && z){
+	}
+	if(!x && !y && !z){
+	}
+	if((x && y) || (y && z)){}
+}

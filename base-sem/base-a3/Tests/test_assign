@@ -1,0 +1,23 @@
+class Dog{}
+
+int main(){
+	int x;
+	double y;
+	string z;
+	int r;
+	double t;
+	double g;
+	string o;
+	Dog a;
+
+	x = r;
+	z = o;
+	y = t;
+
+	x = t;
+	a = null;
+	x = null;
+	a = x;
+
+	a = null + x;
+}

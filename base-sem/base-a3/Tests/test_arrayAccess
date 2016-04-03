@@ -1,0 +1,30 @@
+interface Animal{}
+
+class Dog implements Animal{}
+
+int main(){
+	int[] a;
+	int b;
+	string c;
+	string[] d;
+	Dog[] e;	
+	Dog f;
+
+	a = 0;
+	a[1] = 0;
+	b[0] = 0;
+	a[0] = a[1];
+	b = a[0];
+	b = a[0] + a[1];
+
+	d[0] = "temp";
+	d[0] = 0;
+
+	e[1] = new Dog;
+	e[1] = f;
+	e[1] = a;
+	e[b] = new Dog;
+
+	for(a[0] = 0; a[0] < 1; a[0]++){
+	}
+}

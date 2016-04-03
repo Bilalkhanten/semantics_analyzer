@@ -1,0 +1,19 @@
+class Dog{}
+
+int main(){
+	int[][] a;
+	string[][] b;
+	double[][] c;
+	bool[][] d;
+	Dog[][] e;
+	Dog[] f;
+	int[] g;
+
+	a[0][1] = "string";
+	e = f;
+
+	a[0] = g;
+	a[0][0] = g;
+	a = g;
+	a[0][0] = 1;
+}

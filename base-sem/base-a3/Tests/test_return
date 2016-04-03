@@ -1,0 +1,13 @@
+int main(){
+	bool x;
+	int num;
+	/**
+	while(x){
+		return 0;
+	}**/
+	switch(num){
+	case 0: return 0;
+	case 1: 
+	default:
+	} 
+}

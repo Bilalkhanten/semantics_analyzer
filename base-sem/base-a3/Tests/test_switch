@@ -1,9 +1,9 @@
 int main(){
 	int n;
-	n = 0;
-
+	//n = 0;
+	
 	switch(n){
-		case 0: { int n; }
+		case 0: //{ int n; }
 		case 1: 
 		default: break;
 	}

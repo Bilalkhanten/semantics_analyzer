@@ -33,6 +33,10 @@ class Type : public Node
     const char *GetPrintNameForNode() { return "Type"; }
     void PrintChildren(int indentLevel);
     virtual const char* GetTypeName() { return typeName; }
+    virtual Type* GetType() { return Type::errorType; }
+    virtual int GetNumberOfDims() { return 0; }
+    virtual bool isArray() { return false; }
+    virtual bool isNamedType() { return false; }
     virtual void PrintToStream(ostream& out) { out << typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
 };
@@ -48,6 +52,7 @@ class NamedType : public Type
     const char *GetPrintNameForNode() { return "NamedType"; }
     const char* GetTypeName() { return id->GetName(); }
     Identifier* GetID() { return id; }
+    bool isNamedType() { return true; }
     void PrintChildren(int indentLevel);
     void PrintToStream(ostream& out) { out << id; }
 };
@@ -56,13 +61,16 @@ class ArrayType : public Type
 {
   protected:
     Type *elemType;
+    int numberOfDims;
 
   public:
     ArrayType(yyltype loc, Type *elemType);
-
+    Type* GetType() { return elemType; }
+    int GetNumberOfDims() { return numberOfDims; }
     const char *GetPrintNameForNode() { return "ArrayType"; }
     void PrintChildren(int indentLevel);
-    const char* GetTypeName() { return elemType->GetTypeName(); }
+    bool isArray() { return true; }
+    const char* GetTypeName();
     void PrintToStream(ostream& out) { out << elemType << "[]"; }
 };
 

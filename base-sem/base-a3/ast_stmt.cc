@@ -32,6 +32,10 @@ Decl* SymbolTable::CheckDecl(NamedType* t){
     return symbolTable->Lookup(t->GetTypeName());
 }
 
+void SymbolTable::SetBreakCheck(Stmt* d){
+    this->breakCheck = d;
+}
+
 void SymbolTable::SetClassDecl(ClassDecl* d){
     this->decl = d;
 }
@@ -176,6 +180,11 @@ void ForStmt::BuildScope(SymbolTable* s){
 void ForStmt::Check(){
     init->Check();
     test->Check();
+    Type* t = test->GetType();
+    if(t->GetTypeName() != Type::boolType->GetTypeName()){
+        ReportError::TestNotBoolean(test);
+    }
+
     step->Check();
 
     body->Check();
@@ -195,6 +204,7 @@ void WhileStmt::BuildScope(SymbolTable* s){
 }
 
 void WhileStmt::Check(){
+    Assert(test->GetType() != NULL);
     if(test->GetType()->GetTypeName() != Type::boolType->GetTypeName()){
         ReportError::TestNotBoolean(test);
     }
@@ -252,6 +262,24 @@ bool IfStmt::isReturn(){
             return false;
         }
         return false;
+    }
+}
+
+void BreakStmt::Check(){
+    SymbolTable* current = new SymbolTable();
+    current = localScope;
+    bool found = false;
+
+    while(current != NULL && !found){
+        Stmt* s = current->GetBreakCheck();
+        if(s->canBreak()){
+            found = true;
+        }
+        current = current->GetParentTable();
+    }
+
+    if(!found){
+        ReportError::BreakOutsideLoop(this);
     }
 }
 
@@ -342,8 +370,7 @@ void PrintStmt::BuildScope(SymbolTable* s){
 void PrintStmt::Check(){
     for(int i = 0; i < args->NumElements(); i++){
         Type* t = args->Nth(i)->GetType();
-        if(t->GetTypeName() != Type::intType->GetTypeName() && t->GetTypeName() != Type::boolType->GetTypeName()
-           && t->GetTypeName() != Type::stringType->GetTypeName()){
+        if(t != Type::intType && t != Type::boolType && t != Type::stringType){
             ReportError::PrintArgMismatch(args->Nth(i), i, t);
         }
     }
@@ -374,12 +401,18 @@ void SwitchLabel::BuildScope(SymbolTable* s){
 }
 
 bool SwitchLabel::caseReturn(){
+    cout << "here" << endl;cout << "here" << endl;
     bool found = false;
     for(int i = 0; i < stmts->NumElements(); i++){
-        found = stmts->Nth(i)->isReturn();
+        cout << "herei6757" << endl;
+        BreakStmt* stmt = new BreakStmt(*location);
+        //stmt = stmts->Nth(i);
+        found = stmt->isReturn();
         if(found){
+                cout << "here" << endl;
             return true;
         }
+        cout << "here" << endl;
     }
     return false;
 }
@@ -404,8 +437,11 @@ SwitchStmt::SwitchStmt(Expr *e, List<Case*> *c, Default *d) {
 }
 
 bool SwitchStmt::isReturn(){
+    cout << "here" << endl;
     if(def){
+        cout << "here" << endl;
         if(def->caseReturn()){
+            cout << "here" << endl;
             return true;
         }
     }
@@ -414,15 +450,17 @@ bool SwitchStmt::isReturn(){
     Case* c = cases->Nth(0);
     Assert(c != NULL);
     c->caseReturn();
-
+    cout << "here" << endl;
     for(int i = 0; i < cases->NumElements(); i++){
         Assert(cases->Nth(i) != NULL);
         Case* c1 = cases->Nth(i);
         bool found = c1->caseReturn();
         if(found){
+                cout << "here" << endl;
             return true;
         }
     }
+    cout << "here" << endl;
     return false;
 }
 

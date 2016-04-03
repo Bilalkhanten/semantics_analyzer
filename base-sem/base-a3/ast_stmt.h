@@ -22,12 +22,14 @@ class Expr;
 class IntConstant;
 class NamedType;
 class ClassDecl;
+class Stmt;
 
 void yyerror(const char *msg);
 
 class SymbolTable {
   private:
     const char* name;
+    Stmt* breakCheck;
     ClassDecl* decl;
     FnDecl* fnDecl;
     Hashtable<Decl*>* symbolTable;
@@ -40,8 +42,10 @@ class SymbolTable {
     Decl* CheckDecl(Decl* d);
     Decl* CheckDecl(NamedType* d);
     Decl* CheckDecl(const char* d);
+    void SetBreakCheck(Stmt* d);
     void SetClassDecl(ClassDecl* d);
     void SetFnDecl(FnDecl* d);
+    Stmt* GetBreakCheck() { return breakCheck; }
     ClassDecl* GetClassDecl() { return decl; }
     FnDecl* GetFnDecl() { return fnDecl; }
     void SetName(const char* id) { this->name = id; }
@@ -72,6 +76,7 @@ class Stmt : public Node
 
   public:
      Stmt() : Node() { }
+     virtual bool canBreak() { return false; }
      virtual bool isReturn() { return false; }
      void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; }
      Stmt(yyltype loc) : Node(loc) {}
@@ -121,6 +126,7 @@ class ForStmt : public LoopStmt
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
     const char *GetPrintNameForNode() { return "ForStmt"; }
     bool isReturn() { return body->isReturn(); }
+    bool canBreak() { return true; }
     void BuildScope(SymbolTable* s);
     void Check();
     void PrintChildren(int indentLevel);
@@ -132,6 +138,7 @@ class WhileStmt : public LoopStmt
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
     const char *GetPrintNameForNode() { return "WhileStmt"; }
     bool isReturn() { return body->isReturn(); }
+    bool canBreak() { return true; }
     void BuildScope(SymbolTable* s);
     void Check();
     void PrintChildren(int indentLevel);
@@ -163,6 +170,9 @@ class BreakStmt : public Stmt
 {
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
+    //bool isReturn() { return false; }
+    void Check();
+    bool isReturn() { cout << "kjasgh;sjhhjH" << endl;  return false; }
     const char *GetPrintNameForNode() { return "BreakStmt"; }
 };
 
@@ -188,6 +198,7 @@ class PrintStmt : public Stmt
   public:
     PrintStmt(List<Expr*> *arguments);
     const char *GetPrintNameForNode() { return "PrintStmt"; }
+    bool isReturn() { return false; }
     void BuildScope(SymbolTable* s);
     void Check();
     void PrintChildren(int indentLevel);
@@ -236,6 +247,7 @@ class SwitchStmt : public Stmt
     SwitchStmt(Expr *expr, List<Case*> *cases, Default *def);
     const char *GetPrintNameForNode() { return "SwitchStmt"; }
     bool isReturn();
+    bool canBreak() { return true; }
     void BuildScope(SymbolTable* s);
     void Check();
     void PrintChildren(int indentLevel);

@@ -1,4 +1,3 @@
-
 /*
  * The Expr class and its subclasses are used to represent expressions
  * in the AST.  For each expression in the language (add, call, New,
@@ -24,7 +23,12 @@ class Expr : public Stmt
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
-    void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s;}
+    void BuildScope(SymbolTable* s) { cout << "here" << endl; Assert(s != NULL); localScope = new SymbolTable(); localScope = s;}
+    bool IsCompatible(Expr* other);
+    virtual Expr* GetBase() { return NULL; }
+    virtual int GetNumOfAccess() { return 0; }
+    virtual bool isNewArray() { return false; }
+    virtual bool isArrayAccess() { return false; }
     virtual bool isEmpty() { return false; }
     virtual Type* GetType() { return NULL; }
     virtual NamedType* GetNamedType() { return NULL; }
@@ -128,6 +132,7 @@ class CompoundExpr : public Expr
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
     virtual void BuildScope(SymbolTable* s);
+    //bool isArrayAcess() { bool t1, t2; if(left){ t1 = left->isArrayAcess; } t2 = left->isArray}
     Type* GetType();
     void PrintChildren(int indentLevel);
 };
@@ -140,6 +145,8 @@ class PostfixExpr : public Expr
 
   public:
     PostfixExpr(Expr *lhs, Operator *op);
+    void Check();
+    void BuildScope(SymbolTable* s) { Assert(s!=NULL);localScope = new SymbolTable(); localScope = s; left->BuildScope(s);}
     const char *GetPrintNameForNode() { return "PostfixExpr"; }
     Type* GetType() { return left->GetType(); }
     void PrintChildren(int indentLevel);
@@ -149,6 +156,7 @@ class ArithmeticExpr : public CompoundExpr
 {
   public:
     void Check();
+    Type* GetType();
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "ArithmeticExpr"; }
@@ -210,11 +218,17 @@ class ArrayAccess : public LValue
 {
   protected:
     Expr *base, *subscript;
+    int numberOfAccess;
 
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
     const char *GetPrintNameForNode() { return "ArrayAccess"; }
+    void Check();
+    void BuildScope(SymbolTable* s) { localScope = new SymbolTable(); localScope = s; base->BuildScope(s); subscript->BuildScope(s);}
+    Expr* GetBase() { return base; }
     Type* GetType();
+    int GetNumOfAccess() { return numberOfAccess; }
+    bool isArrayAccess() { return true; }
     void PrintChildren(int indentLevel);
 };
 
@@ -271,6 +285,8 @@ class NewExpr : public Expr
   public:
     NewExpr(yyltype loc, NamedType *clsType);
     const char *GetPrintNameForNode() { return "NewExpr"; }
+    void Check();
+    Type* GetType();
     NamedType* GetNamedType() { return cType; }
     void PrintChildren(int indentLevel);
 };
@@ -284,6 +300,9 @@ class NewArrayExpr : public Expr
   public:
     NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
     const char *GetPrintNameForNode() { return "NewArrayExpr"; }
+    void BuildScope(SymbolTable* s) { Assert(s!=NULL);localScope = new SymbolTable(); localScope = s; size->BuildScope(s); }
+    bool isNewArray() { return true; }
+    void Check();
     Type* GetType() { return elemType; }
     void PrintChildren(int indentLevel);
 };
@@ -292,6 +311,7 @@ class ReadIntegerExpr : public Expr
 {
   public:
     ReadIntegerExpr(yyltype loc) : Expr(loc) {}
+    Type* GetType();
     const char *GetPrintNameForNode() { return "ReadIntegerExpr"; }
 };
 
@@ -299,6 +319,7 @@ class ReadLineExpr : public Expr
 {
   public:
     ReadLineExpr(yyltype loc) : Expr (loc) {}
+    Type* GetType();
     const char *GetPrintNameForNode() { return "ReadLineExpr"; }
 };
 
