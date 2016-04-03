@@ -675,6 +675,7 @@ void Call::Check() {
                     ReportError::FieldNotFoundInBase(new Identifier(*this->location, classType->GetTypeName()), classType);
                     return;
                 }
+                returnType = d->GetType();
                 return;
             }
 
@@ -700,6 +701,7 @@ void Call::Check() {
                 Decl* ext = func->GetExtendScope();
                 if(ext == NULL){
                      if(func->GetScope()->CheckDecl(field->GetName())){
+                        returnType = func->GetType();
                         return;
                      }
                      else{
@@ -725,6 +727,7 @@ void Call::Check() {
                                             return;
                                         }
                                     }
+                                    returnType = func->GetType();
                                     return;
                                 }
                             }
@@ -766,7 +769,7 @@ void Call::Check() {
                 if(strcmp(actualsT->GetTypeName(), varDeclT->GetTypeName()) != 0){
                     if(actualsT->isNamedType() && varDeclT->isNamedType()){
                         if(actuals->Nth(i)->GetType()->IsCompatible(varDeclT->GetType(), localScope)){
-                            return;
+                            continue;
                         }
                         ReportError::NotCompatible(vDecl->Nth(i), actualsT);
                         return;
@@ -775,6 +778,7 @@ void Call::Check() {
                     return;
                 }
             }
+            returnType = func->GetType();
             return;
         }
     }
@@ -817,6 +821,7 @@ void Call::Check() {
                         return;
                     }
                 }
+                returnType = decl->GetType();
                 return;
             }
         }//end else
@@ -824,7 +829,7 @@ void Call::Check() {
 }
 
 Type* Call::GetType(){
-
+    return returnType;
 }
 
  void Call::PrintChildren(int indentLevel) {

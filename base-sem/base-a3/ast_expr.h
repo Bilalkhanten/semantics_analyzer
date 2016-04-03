@@ -265,6 +265,7 @@ class Call : public Expr
     Expr *base;	// will be NULL if no explicit base
     Identifier *field;
     List<Expr*> *actuals;
+    Type* returnType;
 
   public:
     Call() : Expr(), base(NULL), field(NULL), actuals(NULL) {}
