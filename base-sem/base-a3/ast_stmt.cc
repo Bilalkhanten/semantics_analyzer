@@ -195,7 +195,6 @@ void WhileStmt::BuildScope(SymbolTable* s){
 }
 
 void WhileStmt::Check(){
-    Assert(test->GetType() != NULL);
     if(test->GetType()->GetTypeName() != Type::boolType->GetTypeName()){
         ReportError::TestNotBoolean(test);
     }
@@ -232,7 +231,7 @@ void IfStmt::Check(){
     test->Check();
     body->Check();
 
-    if(test->GetType() != Type::boolType){
+    if(test->GetType()->GetTypeName() != Type::boolType->GetTypeName()){
         ReportError::TestNotBoolean(test);
     }
 
@@ -343,7 +342,8 @@ void PrintStmt::BuildScope(SymbolTable* s){
 void PrintStmt::Check(){
     for(int i = 0; i < args->NumElements(); i++){
         Type* t = args->Nth(i)->GetType();
-        if(t != Type::intType && t != Type::boolType && t != Type::stringType){
+        if(t->GetTypeName() != Type::intType->GetTypeName() && t->GetTypeName() != Type::boolType->GetTypeName()
+           && t->GetTypeName() != Type::stringType->GetTypeName()){
             ReportError::PrintArgMismatch(args->Nth(i), i, t);
         }
     }
