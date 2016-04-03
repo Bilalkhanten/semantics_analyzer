@@ -1,0 +1,14 @@
+int main(){
+	int a;
+	bool b;
+	string c;
+	double t;
+
+	Print(a);
+	Print(b);
+	Print(c);
+	
+	Print(a, b);
+	Print(a, b, c);
+	Print(t);
+}

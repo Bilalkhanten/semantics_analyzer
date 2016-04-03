@@ -1,0 +1,40 @@
+interface Animal{
+	void eat();
+}
+
+class Dog implements Animal{
+	void eat() {
+		Dog d;
+		d = new Dog;
+	}
+}
+
+class Poodle extends Dog{
+	void eat() {
+		Poodle e;
+		e = new Poodle;
+	}
+}
+
+class Spain extends Poodle{
+}
+
+class Temp{}
+
+int main() {
+	Animal a;
+	Dog b;
+	Poodle c;
+	Spain s;
+	Temp t;
+
+	a = new Poodle;
+	b = new Poodle;
+	c = new Poodle;
+
+	a.eat();
+
+	s.eat();
+
+	t.eat();
+}
