@@ -1,0 +1,23 @@
+class Human{}
+
+class Humanoid{
+	Humanoid functio(){}
+	Human temp(Humanoid h1, Human h2){}
+}
+
+Human funct2(){}
+
+void funct(){}
+
+void funct1(string a){
+	a = "temp";
+}
+
+int main(){
+	int a;
+	int[] b;
+
+	funct();
+	funct1("hello");
+	b.length();
+}

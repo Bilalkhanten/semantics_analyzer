@@ -1,0 +1,6 @@
+class Dog{}
+
+int main(){
+	Dog x;
+	x = new int;
+}

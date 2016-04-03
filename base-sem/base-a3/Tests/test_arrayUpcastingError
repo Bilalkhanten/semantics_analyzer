@@ -1,0 +1,14 @@
+class Animal{}
+class Dog extends Animal{}
+class Poodle extends Dog{}
+
+int main(){
+	Animal[] a;
+	Dog[] d;
+	Poodle[] p;
+	Dog d2;
+	Animal a2;
+
+	d = p;
+	d2 = a2;
+}
